@@ -77,11 +77,6 @@ namespace Lexer
             return token;
         }
 
-        private void SkipWhiteSpace()
-        {
-            throw new NotImplementedException();
-        }
-
         public void Abort(string message)
         {
             Console.Error.WriteLine ("Lexing Error: " + message);
