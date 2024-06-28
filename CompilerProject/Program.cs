@@ -3,7 +3,7 @@ internal class Program
 { 
     private static void Main(string[] args)
     {
-        string source = "+- */";
+        string source = "+- // This is a comment!\n */";
         Lexer.Lexer lexer = new Lexer.Lexer(source); 
 
         Lexer.Token token = lexer.GetToken();

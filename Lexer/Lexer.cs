@@ -16,10 +16,10 @@ namespace Lexer
             this.source = source + "\n";
             this.currChar = ' ';
             this.currPos = -1;
-            this.nextChar();
+            this.NextChar();
         }
 
-        public void nextChar()
+        public void NextChar()
         {
             this.currPos++;
             if (currPos >= source.Length)
@@ -56,8 +56,67 @@ namespace Lexer
                     token = new Token(currChar.ToString(), Token.TokenType.ASTERIK);
                     break;
                 case '/':
-                    token = new Token(currChar.ToString(), Token.TokenType.SLASH);
-                    break;
+                    if (Peek() == '/')
+                    {
+                        NextChar();
+                        SkipComments();
+                        token = new Token(Peek().ToString(), Token.TokenType.NEWLINE);
+                        NextChar();
+                        break;
+                    }
+                    else
+                    {
+                        token = new Token(currChar.ToString(), Token.TokenType.SLASH);
+                        break;
+                    }
+                case '=':
+                    if (Peek() == '=')
+                    {
+                        token = new Token(currChar + Peek().ToString(), Token.TokenType.EQEQ);
+                        NextChar();
+                        break;
+                    }
+                    else
+                    {
+                        token = new Token(currChar.ToString(), Token.TokenType.EQ);
+                        break;
+                    }
+                case '>':
+                    if (Peek() == '=')
+                    {
+                        token = new Token(currChar + Peek().ToString(), Token.TokenType.GTEQ);
+                        NextChar();
+                        break;
+                    }
+                    else
+                    {
+                        token = new Token(currChar.ToString(), Token.TokenType.GT);
+                        break;
+                    }
+                case '<':
+                    if (Peek() == '=')
+                    {
+                        token = new Token(currChar + Peek().ToString(), Token.TokenType.LTEQ);
+                        NextChar();
+                        break;
+                    }
+                    else
+                    {
+                        token = new Token(currChar.ToString(), Token.TokenType.LT);
+                        break;
+                    }
+                case '!':
+                    if (Peek() == '=')
+                    {
+                        token = new Token(currChar + Peek().ToString(), Token.TokenType.NOTEQ);
+                        NextChar(); 
+                        break;
+                    }
+                    else
+                    {
+                        Abort("Excpected '!=', but got '!'");
+                        break;
+                    }
                 case '\n':
                     token = new Token(currChar.ToString(), Token.TokenType.NEWLINE);
                     break;
@@ -67,14 +126,23 @@ namespace Lexer
                 case ' ': // handles whitespace skips
                 case '\t':
                 case '\r':
-                    nextChar();
+                    NextChar();
                     return GetToken();
                 default:
                     Abort("Unknown Token \"" + currChar.ToString() + "\" not recognized");
                     break;
             }
-            nextChar();
+            NextChar();
             return token;
+        }
+
+        private void SkipComments()
+        {
+            while (Peek() != '\n')
+            {
+                NextChar();
+            }
+            return;
         }
 
         public void Abort(string message)
