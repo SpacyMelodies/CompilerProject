@@ -20,8 +20,9 @@ namespace Lexer
         {
             EOF = -1,
             NEWLINE = 0,
-            IDENT = 2,
-            STRING = 3,
+            NUMBER = 2,
+            IDENT = 3,
+            STRING = 4,
             // Keywords
             LABEL = 101,
             GOTO = 102,

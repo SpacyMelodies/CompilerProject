@@ -117,6 +117,12 @@ namespace Lexer
                         Abort("Excpected '!=', but got '!'");
                         break;
                     }
+                case '"':
+                    token = new Token(GetString(), Token.TokenType.STRING);
+                    break;
+                case var _check when (currChar >= '0' && currChar <= '9'): // _check doesnt do anything, this handles numeric values for lexing
+                    token = new Token(GetNumber(), Token.TokenType.NUMBER);
+                    break;
                 case '\n':
                     token = new Token(currChar.ToString(), Token.TokenType.NEWLINE);
                     break;
@@ -136,6 +142,54 @@ namespace Lexer
             return token;
         }
 
+        private string GetNumber() // NOTE: see if I can get this a bit more concise
+        {
+            string returnString = "";
+            int decimalCount = 0;
+            while ((currChar >= '0' && currChar <= '9') || currChar == '.')
+            {
+                if (currChar == '.')
+                {
+
+                    if (decimalCount == 0)
+                    {
+                        decimalCount++;
+                    }
+                    else
+                    {
+                        Abort("Error in Number: number had more than 1 decmial point");
+                    }
+                    if (Peek() < '0' || Peek() > '9')
+                    {
+                        Abort("Error in Number: no digit after decimal point");
+                    }
+                }
+                returnString += currChar;
+                if ((Peek() >= '0' && Peek() <= '9') || Peek() == '.')
+                {
+                    NextChar();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return returnString;
+        }
+
+        // need to edit this to not allow special chars
+        private string GetString()
+        {
+            string returnString = "";
+            while(Peek() != '"')
+            {
+                returnString += currChar;
+                NextChar();
+            }
+            NextChar();
+            return returnString;
+        }
+
         private void SkipComments()
         {
             while (Peek() != '\n')
@@ -148,8 +202,7 @@ namespace Lexer
         public void Abort(string message)
         {
             Console.Error.WriteLine ("Lexing Error: " + message);
-            throw new Exception ("Lexing Error: " + message ); 
-            
+            throw new Exception ("Lexing Error: " + message );            
         }
     }
 }
