@@ -1,7 +1,7 @@
 ﻿using Lexer;
 internal class Program
 { 
-    // NOTE: next work is identifiers / key words section
+    // driver program for testing lexer
     private static void Main(string[] args)
     {
         string source = "IF+-123 foo*THEN/";

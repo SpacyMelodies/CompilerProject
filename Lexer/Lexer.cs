@@ -20,6 +20,7 @@ namespace Lexer
             this.NextChar();
         }
 
+        // shifts the char pointer to the next char in the token
         public void NextChar()
         {
             this.currPos++;
@@ -33,6 +34,7 @@ namespace Lexer
             }
         }
 
+        // looks at the next char value in the source file/string
         public char Peek()
         {
             if (currPos + 1 >= source.Length)
@@ -42,6 +44,7 @@ namespace Lexer
             return source[currPos + 1];
         }
 
+        // returns token containing token type and content(string)
         public Token GetToken()
         {
             Token token = null;
@@ -134,7 +137,7 @@ namespace Lexer
                     {
                         token = new Token(lexeme, Token.TokenType.IDENT);
                     }
-                    break;
+                    break;  
                 case '\n':
                     token = new Token(currChar.ToString(), Token.TokenType.NEWLINE);
                     break;
@@ -153,14 +156,15 @@ namespace Lexer
             NextChar();
             return token;
         }
-
+        
+        // returns a lexeme string to the caller, with checks defined for lexems
         private string GetLexeme()
         {
             string returnString = "";
-            while(char.IsLetter(currChar))
+            while(char.IsLetterOrDigit(currChar))
             {
                 returnString += currChar;
-                if (!char.IsLetter(Peek()))
+                if (!char.IsLetterOrDigit(Peek()))
                 {
                     break;
                 }
@@ -172,6 +176,7 @@ namespace Lexer
             return returnString;
         }
 
+        // returns a number string to the caller, with checks defined for numbers
         private string GetNumber() // NOTE: see if I can get this a bit more concise
         {
             string returnString = "";
@@ -207,7 +212,7 @@ namespace Lexer
             return returnString;
         }
 
-        // need to edit this to not allow special chars
+        // returns user string , with checks defined for checking string bounds 
         private string GetString()
         {
             string returnString = "";
@@ -227,6 +232,7 @@ namespace Lexer
             return returnString;
         }
 
+        // skips '//' comments until a new line
         private void SkipComments()
         {
             while (Peek() != '\n')
@@ -236,6 +242,7 @@ namespace Lexer
             return;
         }
 
+        // prints error message to console then throws exception
         public void Abort(string message)
         {
             Console.Error.WriteLine ("Lexing Error: " + message);

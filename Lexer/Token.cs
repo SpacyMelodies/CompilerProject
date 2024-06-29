@@ -15,9 +15,6 @@ namespace Lexer
            TokenText = tokenText;
            Type = type;
         }
-
-        public static List<string> keywordList = new List<string>() { "LABEL", "GOTO", "PRINT", "INPUT", "LET", "IF", "THEN", "ENDIF", "WHILE", "REPEAT", "ENDWHILE" };
-
         public enum TokenType
         {
             EOF = -1,
