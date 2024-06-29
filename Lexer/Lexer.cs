@@ -185,8 +185,7 @@ namespace Lexer
             {
                 if (currChar == '\n' || currChar == '\r' || currChar == '\t' || currChar == '\\' || currChar == '%')
                 {
-                    NextChar();
-                    continue;
+                    Abort("Error in string: Special char used in string");
                 }
                 else
                 {
