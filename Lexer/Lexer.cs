@@ -50,6 +50,7 @@ namespace Lexer
             Token token = null;
             switch (currChar)
             {
+                //operators
                 case '+':
                     token = new Token(currChar.ToString(), Token.TokenType.PLUS);
                     break;
@@ -121,9 +122,11 @@ namespace Lexer
                         Abort("Excpected '!=', but got '!'");
                         break;
                     }
+                //strings
                 case '"':
                     token = new Token(GetString(), Token.TokenType.STRING);
                     break;
+                // Numbers and Lexemes
                 case var _check when (currChar >= '0' && currChar <= '9'): // _check doesnt do anything, this handles numeric values for lexing
                     token = new Token(GetNumber(), Token.TokenType.NUMBER);
                     break;
@@ -138,6 +141,7 @@ namespace Lexer
                         token = new Token(lexeme, Token.TokenType.IDENT);
                     }
                     break;  
+                // NewLines & whitespace
                 case '\n':
                     token = new Token(currChar.ToString(), Token.TokenType.NEWLINE);
                     break;
@@ -160,10 +164,10 @@ namespace Lexer
         // returns a lexeme string to the caller, with checks defined for lexems
         private string GetLexeme()
         {
-            string returnString = "";
+            string valueString = "";
             while(char.IsLetterOrDigit(currChar))
             {
-                returnString += currChar;
+                valueString += currChar;
                 if (!char.IsLetterOrDigit(Peek()))
                 {
                     break;
@@ -173,13 +177,13 @@ namespace Lexer
                     NextChar();
                 }
             }
-            return returnString;
+            return valueString;
         }
 
         // returns a number string to the caller, with checks defined for numbers
         private string GetNumber() // NOTE: see if I can get this a bit more concise
         {
-            string returnString = "";
+            string valueString = "";
             int decimalCount = 0;
             while ((currChar >= '0' && currChar <= '9') || currChar == '.')
             {
@@ -199,7 +203,7 @@ namespace Lexer
                         Abort("Error in Number: no digit after decimal point");
                     }
                 }
-                returnString += currChar;
+                valueString += currChar;
                 if ((Peek() >= '0' && Peek() <= '9') || Peek() == '.')
                 {
                     NextChar();
@@ -209,13 +213,13 @@ namespace Lexer
                     break;
                 }
             }
-            return returnString;
+            return valueString;
         }
 
         // returns user string , with checks defined for checking string bounds 
         private string GetString()
         {
-            string returnString = "";
+            string valueString = "";
             while(Peek() != '"')
             {
                 if (currChar == '\n' || currChar == '\r' || currChar == '\t' || currChar == '\\' || currChar == '%')
@@ -224,12 +228,12 @@ namespace Lexer
                 }
                 else
                 {
-                    returnString += currChar;
+                    valueString += currChar;
                     NextChar();
                 }
             }
             NextChar();
-            return returnString;
+            return valueString;
         }
 
         // skips '//' comments until a new line
