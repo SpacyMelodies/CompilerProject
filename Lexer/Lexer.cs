@@ -183,8 +183,16 @@ namespace Lexer
             string returnString = "";
             while(Peek() != '"')
             {
-                returnString += currChar;
-                NextChar();
+                if (currChar == '\n' || currChar == '\r' || currChar == '\t' || currChar == '\\' || currChar == '%')
+                {
+                    NextChar();
+                    continue;
+                }
+                else
+                {
+                    returnString += currChar;
+                    NextChar();
+                }
             }
             NextChar();
             return returnString;
