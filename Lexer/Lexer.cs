@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Lexer
@@ -123,6 +124,17 @@ namespace Lexer
                 case var _check when (currChar >= '0' && currChar <= '9'): // _check doesnt do anything, this handles numeric values for lexing
                     token = new Token(GetNumber(), Token.TokenType.NUMBER);
                     break;
+                case var _check when (char.IsLetter(currChar)):
+                    string lexeme = GetLexeme();
+                    if (Enum.TryParse(lexeme, true, out Token.TokenType result))
+                    {
+                        token = new Token(lexeme, result);
+                    }
+                    else
+                    {
+                        token = new Token(lexeme, Token.TokenType.IDENT);
+                    }
+                    break;
                 case '\n':
                     token = new Token(currChar.ToString(), Token.TokenType.NEWLINE);
                     break;
@@ -140,6 +152,24 @@ namespace Lexer
             }
             NextChar();
             return token;
+        }
+
+        private string GetLexeme()
+        {
+            string returnString = "";
+            while(char.IsLetter(currChar))
+            {
+                returnString += currChar;
+                if (!char.IsLetter(Peek()))
+                {
+                    break;
+                }
+                else
+                {
+                    NextChar();
+                }
+            }
+            return returnString;
         }
 
         private string GetNumber() // NOTE: see if I can get this a bit more concise
