@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using Lexer;
 
 namespace Parser
 {
+    // Need to implement non-implemented functions
+    // parse if/then  if token -> comparator -> then token -> statement(s) -> endif token -> NL token
     public class Parser
     {
         public Lexer.Lexer Lexer { get; set; }
@@ -51,6 +56,105 @@ namespace Parser
         {
             Console.Write("Parser Error: " + message);
             throw new Exception("Parser Error: " + message);
+        }
+
+        public void Program()
+        {
+            Console.WriteLine("PROGRAM");
+            while(!CheckToken(Token.TokenType.EOF))
+            {
+                Statement();
+            }
+            Console.WriteLine("Parsing Completed");
+        }
+
+        public void Statement()
+        {
+            switch(CurrToken.Type)
+            {
+                case Token.TokenType.PRINT:
+                    ParsePrint();
+                    break;
+                case Token.TokenType.IF:
+                    ParseIfThen();
+                    break;
+                case Token.TokenType.WHILE:
+                    ParseLoop();
+                    break;
+                case Token.TokenType.LET:
+                    ParseVariable();
+                    break;
+                case Token.TokenType.LABEL:
+                case Token.TokenType.GOTO:
+                case Token.TokenType.INPUT:
+                    ParseIdentifier();
+                    break;
+                default:
+                    Abort("Statement error: fell through all statements with no value");
+                    break;
+            }
+        }
+
+        private void ParseIdentifier()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParseVariable()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParseLoop()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParseIfThen()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void ParsePrint()
+        {
+            Console.WriteLine("STATEMENT - PRINT");
+            NextToken();
+            if (CheckToken(Token.TokenType.STRING))
+            {
+                NextToken();
+            }
+            else
+            {
+                Expression();
+            }
+
+            NewLine();
+        }
+
+        private void NewLine()
+        {
+            Console.WriteLine("NEW LINE");
+            MatchTokens(Token.TokenType.NEWLINE);
+            while(CheckToken(Token.TokenType.NEWLINE))
+            {
+                NextToken();
+            }
+        }
+
+        private void Expression()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Comparison()
+        {
+            Console.WriteLine("COMPARISON");
+            NextToken();
+            if (CurrToken != )
+            {
+
+            }
+            
         }
     }
 }
