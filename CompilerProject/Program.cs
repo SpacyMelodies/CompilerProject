@@ -1,18 +1,16 @@
-﻿using Lexer;
+﻿using L = Lexer;
+using P = Parser;
 internal class Program
 { 
     // driver program for testing lexer
     private static void Main(string[] args)
     {
         string source = "IF+-123 foo*THEN/";
-        Lexer.Lexer lexer = new Lexer.Lexer(source); 
+        //string source = File.ReadAllText("ParserTest.txt"); // Test file only. will need to make dynamic for actual program (args)
+        L.Lexer lexer = new L.Lexer(source);
+        P.Parser parser = new P.Parser(lexer);
+        parser.Parse();
+        Console.ReadLine();
 
-        Lexer.Token token = lexer.GetToken();
-        
-        while (token.Type != Token.TokenType.EOF)
-        {
-            Console.WriteLine(token.Type);
-            token = lexer.GetToken();
-        }
     }
 }
