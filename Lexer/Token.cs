@@ -40,6 +40,7 @@ namespace Lexer
             MINUS = 203,
             ASTERIK = 204,
             SLASH = 205,
+            // Comparators
             EQEQ = 206, 
             NOTEQ = 207,
             LT = 208,

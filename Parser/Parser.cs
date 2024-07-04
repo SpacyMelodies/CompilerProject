@@ -98,17 +98,32 @@ namespace Parser
 
         private void ParseIdentifier()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("STATEMENT - " + CurrToken.Type.ToString());
+            NextToken();
+            MatchToken(Token.TokenType.IDENT);
         }
 
         private void ParseVariable()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("STATEMENT - LET");
+            NextToken();
+            MatchToken(Token.TokenType.IDENT);
+            MatchToken(Token.TokenType.EQ);
+            Expression();
         }
 
         private void ParseLoop()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("STATEMENT - WHILE");
+            NextToken();
+            MatchToken(Token.TokenType.REPEAT);
+            NewLine();
+            while (!CheckToken(Token.TokenType.ENDIF))
+            {
+                Statement();
+            }
+            MatchToken(Token.TokenType.ENDIF);
+            // when we return to statement, we get the newline check
         }
 
         private void ParseIfThen()
@@ -137,8 +152,6 @@ namespace Parser
             {
                 Expression();
             }
-
-            NewLine();
         }
 
         private void NewLine()
