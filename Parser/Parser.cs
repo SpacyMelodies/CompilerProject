@@ -81,15 +81,32 @@ namespace Parser
             {
                 Statement();
             }
-            if (Enumerable.SequenceEqual(labelsGotod, labelsDeclared))
+            string labelListComp = CompareLabelLists();
+            if (labelListComp == string.Empty)
             {
                 Console.WriteLine("Parsing Completed");
             }
             else
             {
-                Abort($"GOTO error: trying to GOTO label \"{CurrToken.TokenText}\" that does not exist");
+                Abort($"GOTO error: trying to GOTO label \"{labelListComp}\" that does not exist");
             }
             
+        }
+
+        private string CompareLabelLists()
+        {
+            foreach (var label in labelsGotod)
+            {
+                if(labelsDeclared.Contains(label))
+                {
+                    continue;
+                }
+                else
+                {
+                    return label;
+                }
+            }
+            return string.Empty;
         }
 
         public void Statement()
