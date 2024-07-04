@@ -11,6 +11,5 @@ internal class Program
         P.Parser parser = new P.Parser(lexer);
         parser.Program();
         Console.ReadLine();
-
     }
 }

@@ -60,8 +60,12 @@ namespace Parser
 
         public void Abort(string message)
         {
+            Console.WriteLine();
             Console.Write("Parser Error: " + message);
+            Console.WriteLine();
             throw new Exception("Parser Error: " + message);
+
+            //Environment.Exit(-1); Might include this in final
         }
 
         public void Program()
@@ -77,7 +81,15 @@ namespace Parser
             {
                 Statement();
             }
-            Console.WriteLine("Parsing Completed");
+            if (Enumerable.SequenceEqual(labelsGotod, labelsDeclared))
+            {
+                Console.WriteLine("Parsing Completed");
+            }
+            else
+            {
+                Abort($"GOTO error: trying to GOTO label \"{CurrToken.TokenText}\" that does not exist");
+            }
+            
         }
 
         public void Statement()
@@ -111,23 +123,26 @@ namespace Parser
         private void ParseIdentifier()
         {
             Console.WriteLine("STATEMENT - " + CurrToken.Type.ToString());
+
             if (CheckToken(Token.TokenType.GOTO))
             {
                 NextToken();
-                if (labelsGotod.Contains(CurrToken.TokenText))
-                {
-                    Abort($"{CurrToken.TokenText} has already been declared as a label");
-                }
+                labelsGotod.Add(CurrToken.TokenText);
             }
             else if (CheckToken(Token.TokenType.LABEL))
             {
                 NextToken();
+                if (labelsDeclared.Contains(CurrToken.TokenText))
+                {
+                    Abort($"{CurrToken.TokenText} has already been declared as a label");
+                }
                 labelsDeclared.Add(CurrToken.TokenText);
             }
             else
             {
                 NextToken();
             }
+
             MatchToken(Token.TokenType.IDENT);
         }
 
@@ -135,8 +150,15 @@ namespace Parser
         {
             Console.WriteLine("STATEMENT - LET");
             NextToken();
+            if (variables.Contains(CurrToken.TokenText))
+            {
+                variables.Add(CurrToken.TokenText);
+            }
+            else
+            {
+                Abort($"{CurrToken.TokenText} already declared as a variable");
+            }    
             MatchToken(Token.TokenType.IDENT);
-            variables.Add(CurrToken.TokenText);
             MatchToken(Token.TokenType.EQ);
             Expression();
         }
@@ -203,7 +225,7 @@ namespace Parser
             }
             else
             {
-                Abort($"Comparison error: expected comparator got {CurrToken.Type}");
+                Abort($"Comparison error: expected comparator got \"{CurrToken.Type}\"");
             }
         }
         private void Expression()
@@ -240,7 +262,14 @@ namespace Parser
             if (CheckToken(Token.TokenType.IDENT))
             {
                 Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
-                MatchToken(Token.TokenType.IDENT);
+                if (variables.Contains(CurrToken.TokenText))
+                {
+                    MatchToken(Token.TokenType.IDENT);
+                }
+                else
+                {
+                    Abort($"Variable Refernce Error: trying to reference a variable \"{CurrToken.TokenText}\", which has not been declared");
+                }
             }
             else
             {
