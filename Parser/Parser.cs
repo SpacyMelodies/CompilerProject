@@ -40,7 +40,7 @@ namespace Parser
             PeekToken = Lexer.GetToken();
         }
 
-        public void MatchTokens(Lexer.Token.TokenType tokenType)
+        public void MatchToken(Lexer.Token.TokenType tokenType)
         {
             if (!CheckToken(tokenType))
             {
@@ -61,7 +61,7 @@ namespace Parser
         public void Program()
         {
             Console.WriteLine("PROGRAM");
-            while(!CheckToken(Token.TokenType.EOF))
+            while (!CheckToken(Token.TokenType.EOF))
             {
                 Statement();
             }
@@ -70,7 +70,7 @@ namespace Parser
 
         public void Statement()
         {
-            switch(CurrToken.Type)
+            switch (CurrToken.Type)
             {
                 case Token.TokenType.PRINT:
                     ParsePrint();
@@ -90,9 +90,10 @@ namespace Parser
                     ParseIdentifier();
                     break;
                 default:
-                    Abort("Statement error: fell through all statements with no value");
+                    Abort($"Statement error: currToken is {CurrToken.Type}, need a valid statement");
                     break;
             }
+            NewLine();
         }
 
         private void ParseIdentifier()
@@ -112,7 +113,17 @@ namespace Parser
 
         private void ParseIfThen()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("STATEMENT - IF");
+            NextToken();
+            Comparison();
+            MatchToken(Token.TokenType.THEN);
+            NewLine();
+            while (!CheckToken(Token.TokenType.ENDIF))
+            {
+                Statement();
+            }
+            MatchToken(Token.TokenType.ENDIF);
+            NewLine();
         }
 
         private void ParsePrint()
@@ -134,8 +145,8 @@ namespace Parser
         private void NewLine()
         {
             Console.WriteLine("NEW LINE");
-            MatchTokens(Token.TokenType.NEWLINE);
-            while(CheckToken(Token.TokenType.NEWLINE))
+            MatchToken(Token.TokenType.NEWLINE);
+            while (CheckToken(Token.TokenType.NEWLINE))
             {
                 NextToken();
             }
@@ -148,13 +159,7 @@ namespace Parser
 
         private void Comparison()
         {
-            Console.WriteLine("COMPARISON");
-            NextToken();
-            if (CurrToken != )
-            {
 
-            }
-            
         }
     }
 }
