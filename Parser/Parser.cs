@@ -50,7 +50,7 @@ namespace Parser
         {
             if (!CheckToken(tokenType))
             {
-                Abort($"Unexpected Token in syntax tree. Expected {tokenType} but got {CurrToken}");
+                Abort($"Unexpected Token in syntax tree. Expected {tokenType} but got {CurrToken.Type}");
             }
             else
             {
@@ -90,14 +90,13 @@ namespace Parser
             {
                 Abort($"GOTO error: trying to GOTO label \"{labelListComp}\" that does not exist");
             }
-            
         }
 
         private string CompareLabelLists()
         {
             foreach (var label in labelsGotod)
             {
-                if(labelsDeclared.Contains(label))
+                if (labelsDeclared.Contains(label))
                 {
                     continue;
                 }
@@ -157,9 +156,9 @@ namespace Parser
             }
             else
             {
+                variables.Add(CurrToken.TokenText);
                 NextToken();
             }
-
             MatchToken(Token.TokenType.IDENT);
         }
 
@@ -167,14 +166,10 @@ namespace Parser
         {
             Console.WriteLine("STATEMENT - LET");
             NextToken();
-            if (variables.Contains(CurrToken.TokenText))
+            if (!variables.Contains(CurrToken.TokenText))
             {
                 variables.Add(CurrToken.TokenText);
             }
-            else
-            {
-                Abort($"{CurrToken.TokenText} already declared as a variable");
-            }    
             MatchToken(Token.TokenType.IDENT);
             MatchToken(Token.TokenType.EQ);
             Expression();
@@ -184,13 +179,14 @@ namespace Parser
         {
             Console.WriteLine("STATEMENT - WHILE");
             NextToken();
+            Comparison();
             MatchToken(Token.TokenType.REPEAT);
             NewLine();
-            while (!CheckToken(Token.TokenType.ENDIF))
+            while (!CheckToken(Token.TokenType.ENDWHILE))
             {
                 Statement();
             }
-            MatchToken(Token.TokenType.ENDIF);
+            MatchToken(Token.TokenType.ENDWHILE);
             // when we return to statement, we get the newline check
         }
 
@@ -235,7 +231,7 @@ namespace Parser
         {
             Console.WriteLine("COMPARISON");
             Expression();
-            if ((int)CurrToken.Type >= 206 || (int)CurrToken.Type <= 211)
+            if ((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
             {
                 NextToken();
                 Expression();
@@ -279,14 +275,7 @@ namespace Parser
             if (CheckToken(Token.TokenType.IDENT))
             {
                 Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
-                if (variables.Contains(CurrToken.TokenText))
-                {
-                    MatchToken(Token.TokenType.IDENT);
-                }
-                else
-                {
-                    Abort($"Variable Refernce Error: trying to reference a variable \"{CurrToken.TokenText}\", which has not been declared");
-                }
+                MatchToken(Token.TokenType.IDENT);
             }
             else
             {
