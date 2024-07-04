@@ -61,6 +61,12 @@ namespace Parser
         public void Program()
         {
             Console.WriteLine("PROGRAM");
+
+            while (CheckToken(Token.TokenType.NEWLINE))
+            {
+                NextToken();
+            }
+            
             while (!CheckToken(Token.TokenType.EOF))
             {
                 Statement();
@@ -163,15 +169,62 @@ namespace Parser
                 NextToken();
             }
         }
-
-        private void Expression()
-        {
-            throw new NotImplementedException();
-        }
-
         private void Comparison()
         {
-
+            Console.WriteLine("C");
+            Expression();
+            if((int)CurrToken.Type >= 206 || (int)CurrToken.Type <= 211)
+            {
+                NextToken();
+                Expression();
+            }
+            else
+            {
+                Abort($"Comparison error: expected comparator got {CurrToken.Type}");
+            }
+        }
+        private void Expression()
+        {
+            Console.WriteLine("Expression");
+            Term();
+            while(CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
+            {
+                NextToken();
+                Term();
+            }
+        }
+        private void Term()
+        {
+            Console.WriteLine("Term");
+            Unary();
+            while(CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
+            {
+                NextToken();
+                Unary();
+            }
+        }
+        private void Unary()
+        {
+            Console.WriteLine("Unary");
+            if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
+            {
+                NextToken();
+            }
+            Primary();
+        }
+        private void Primary()
+        {
+            
+            if (CheckToken(Token.TokenType.IDENT))
+            {
+                Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
+                MatchToken(Token.TokenType.IDENT);
+            }
+            else
+            {
+                Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
+                MatchToken(Token.TokenType.NUMBER);
+            }
         }
     }
 }
