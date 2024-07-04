@@ -123,7 +123,6 @@ namespace Parser
                 Statement();
             }
             MatchToken(Token.TokenType.ENDIF);
-            NewLine();
         }
 
         private void ParsePrint()
