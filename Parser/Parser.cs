@@ -17,11 +17,17 @@ namespace Parser
         public Lexer.Lexer Lexer { get; set; }
         private Lexer.Token CurrToken { get; set; }
         private Lexer.Token PeekToken { get; set; }
+        private List<string> variables;
+        private List<string> labelsDeclared;
+        private List<string> labelsGotod;
         public Parser(Lexer.Lexer lexer)
         {
             this.Lexer = lexer;
             CurrToken = lexer.GetToken(); // initializes the first two tokens
             PeekToken = lexer.GetToken();
+            variables = new List<string>();
+            labelsDeclared = new List<string>();
+            labelsGotod = new List<string>();
         }
 
         public bool CheckToken(Lexer.Token.TokenType tokenType)
@@ -66,7 +72,7 @@ namespace Parser
             {
                 NextToken();
             }
-            
+
             while (!CheckToken(Token.TokenType.EOF))
             {
                 Statement();
@@ -105,7 +111,23 @@ namespace Parser
         private void ParseIdentifier()
         {
             Console.WriteLine("STATEMENT - " + CurrToken.Type.ToString());
-            NextToken();
+            if (CheckToken(Token.TokenType.GOTO))
+            {
+                NextToken();
+                if (labelsGotod.Contains(CurrToken.TokenText))
+                {
+                    Abort($"{CurrToken.TokenText} has already been declared as a label");
+                }
+            }
+            else if (CheckToken(Token.TokenType.LABEL))
+            {
+                NextToken();
+                labelsDeclared.Add(CurrToken.TokenText);
+            }
+            else
+            {
+                NextToken();
+            }
             MatchToken(Token.TokenType.IDENT);
         }
 
@@ -114,6 +136,7 @@ namespace Parser
             Console.WriteLine("STATEMENT - LET");
             NextToken();
             MatchToken(Token.TokenType.IDENT);
+            variables.Add(CurrToken.TokenText);
             MatchToken(Token.TokenType.EQ);
             Expression();
         }
@@ -171,9 +194,9 @@ namespace Parser
         }
         private void Comparison()
         {
-            Console.WriteLine("C");
+            Console.WriteLine("COMPARISON");
             Expression();
-            if((int)CurrToken.Type >= 206 || (int)CurrToken.Type <= 211)
+            if ((int)CurrToken.Type >= 206 || (int)CurrToken.Type <= 211)
             {
                 NextToken();
                 Expression();
@@ -185,9 +208,9 @@ namespace Parser
         }
         private void Expression()
         {
-            Console.WriteLine("Expression");
+            Console.WriteLine("EXPRESSION");
             Term();
-            while(CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
+            while (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
                 NextToken();
                 Term();
@@ -195,9 +218,9 @@ namespace Parser
         }
         private void Term()
         {
-            Console.WriteLine("Term");
+            Console.WriteLine("TERM");
             Unary();
-            while(CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
+            while (CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
             {
                 NextToken();
                 Unary();
@@ -205,7 +228,7 @@ namespace Parser
         }
         private void Unary()
         {
-            Console.WriteLine("Unary");
+            Console.WriteLine("UNARY");
             if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
                 NextToken();
@@ -214,7 +237,6 @@ namespace Parser
         }
         private void Primary()
         {
-            
             if (CheckToken(Token.TokenType.IDENT))
             {
                 Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
