@@ -10,8 +10,6 @@ using Lexer;
 
 namespace Parser
 {
-    // Need to implement non-implemented functions
-    // parse if/then  if token -> comparator -> then token -> statement(s) -> endif token -> NL token
     public class Parser
     {
         public Lexer.Lexer Lexer { get; set; }

@@ -1,7 +1,7 @@
 ﻿using L = Lexer;
 using P = Parser;
 internal class Program
-{ 
+{
     // driver program for testing lexer
     private static void Main(string[] args)
     {
