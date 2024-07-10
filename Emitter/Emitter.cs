@@ -38,6 +38,5 @@ namespace Emitter
             File.WriteAllText(FullPath, Code);
         }
 
-
     }
 }

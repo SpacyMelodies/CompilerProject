@@ -18,6 +18,7 @@ namespace Parser
         private List<string> variables;
         private List<string> labelsDeclared;
         private List<string> labelsGotod;
+        string emitterTestString = string.Empty;
         public Parser(Lexer.Lexer lexer)
         {
             this.Lexer = lexer;
@@ -82,7 +83,7 @@ namespace Parser
             string labelListComp = CompareLabelLists();
             if (labelListComp == string.Empty)
             {
-                Console.WriteLine("Parsing Completed");
+                Console.WriteLine(emitterTestString);
             }
             else
             {
@@ -131,6 +132,7 @@ namespace Parser
                     Abort($"Statement error: currToken is {CurrToken.Type}, need a valid statement");
                     break;
             }
+            emitterTestString += ";";
             NewLine();
         }
 
@@ -204,7 +206,8 @@ namespace Parser
 
         private void ParsePrint()
         {
-            Console.WriteLine("STATEMENT - PRINT");
+            emitterTestString += "Console.WriteLine(";
+            //Console.WriteLine("STATEMENT - PRINT");
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
@@ -214,6 +217,7 @@ namespace Parser
             {
                 Expression();
             }
+            emitterTestString += ")";
         }
 
         private void NewLine()
@@ -227,10 +231,11 @@ namespace Parser
         }
         private void Comparison()
         {
-            Console.WriteLine("COMPARISON");
+           // Console.WriteLine("COMPARISON");
             Expression();
             if ((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
             {
+                emitterTestString += CurrToken.TokenText;
                 NextToken();
                 Expression();
             }
@@ -241,29 +246,35 @@ namespace Parser
         }
         private void Expression()
         {
-            Console.WriteLine("EXPRESSION");
+            //emitterTestString += CurrToken.TokenText;
+            //Console.WriteLine("EXPRESSION");
             Term();
             while (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
+                emitterTestString += CurrToken.TokenText;
                 NextToken();
                 Term();
             }
         }
         private void Term()
         {
-            Console.WriteLine("TERM");
+            //emitterTestString += CurrToken.TokenText;
+            //Console.WriteLine("TERM");
             Unary();
             while (CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
             {
+                emitterTestString += CurrToken.TokenText;
                 NextToken();
                 Unary();
             }
         }
         private void Unary()
         {
-            Console.WriteLine("UNARY");
+            //emitterTestString += CurrToken.TokenText;
+           // Console.WriteLine("UNARY");
             if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
+                emitterTestString += CurrToken.TokenText;
                 NextToken();
             }
             Primary();
@@ -272,12 +283,14 @@ namespace Parser
         {
             if (CheckToken(Token.TokenType.IDENT))
             {
-                Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
+                emitterTestString += CurrToken.TokenText;
+                //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
                 MatchToken(Token.TokenType.IDENT);
             }
             else
             {
-                Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
+                emitterTestString += CurrToken.TokenText;
+                //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
                 MatchToken(Token.TokenType.NUMBER);
             }
         }
