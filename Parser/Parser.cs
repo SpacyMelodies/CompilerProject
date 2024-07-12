@@ -13,17 +13,24 @@ namespace Parser
     public class Parser
     {
         public Lexer.Lexer Lexer { get; set; }
+        public Emitter.Emitter Emitter { get; set; }
         private Lexer.Token CurrToken { get; set; }
         private Lexer.Token PeekToken { get; set; }
+
         private List<string> variables;
         private List<string> labelsDeclared;
         private List<string> labelsGotod;
+
         string emitterTestString = string.Empty;
-        public Parser(Lexer.Lexer lexer)
+
+        public Parser(Lexer.Lexer lexer, Emitter.Emitter emitter)
         {
             this.Lexer = lexer;
+            this.Emitter = emitter;
+
             CurrToken = lexer.GetToken(); // initializes the first two tokens
             PeekToken = lexer.GetToken();
+
             variables = new List<string>();
             labelsDeclared = new List<string>();
             labelsGotod = new List<string>();
@@ -83,7 +90,7 @@ namespace Parser
             string labelListComp = CompareLabelLists();
             if (labelListComp == string.Empty)
             {
-                Console.WriteLine(emitterTestString);
+                Emitter.CreateASMFile();
             }
             else
             {
@@ -206,18 +213,19 @@ namespace Parser
 
         private void ParsePrint()
         {
-            emitterTestString += "Console.WriteLine(";
-            //Console.WriteLine("STATEMENT - PRINT");
+            Emitter.EmitText("\nlea rcx, [");
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
+                string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
+                Emitter.EmitTextLine($"{stringRef}]");
+                Emitter.EmitTextLine("call printf");
                 NextToken();
             }
             else
             {
                 Expression();
             }
-            emitterTestString += ")";
         }
 
         private void NewLine()
