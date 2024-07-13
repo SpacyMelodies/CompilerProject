@@ -1,4 +1,4 @@
-﻿PRINT "How many fibonacci numbers do you want?"
+﻿PRINT "Hello, World from my own compiler!"
 
 
 

@@ -139,7 +139,7 @@ namespace Parser
                     Abort($"Statement error: currToken is {CurrToken.Type}, need a valid statement");
                     break;
             }
-            emitterTestString += ";";
+            Emitter.EmitTextLine(""); // emits a new line for the asm file
             NewLine();
         }
 

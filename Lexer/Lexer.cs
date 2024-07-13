@@ -219,7 +219,7 @@ namespace Lexer
         // returns user string , with checks defined for checking string bounds 
         private string GetString()
         {
-            string valueString = "";
+            string valueString = string.Empty;
             while(Peek() != '"')
             {
                 if (currChar == '\n' || currChar == '\r' || currChar == '\t' || currChar == '\\' || currChar == '%')
@@ -231,8 +231,9 @@ namespace Lexer
                     valueString += currChar;
                     NextChar();
                 }
-            }
+            }          
             NextChar();
+            valueString += currChar;
             return valueString;
         }
 

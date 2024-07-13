@@ -10,7 +10,7 @@ internal class Program
         //string source = "IF+-123 foo*THEN/";
         string source = File.ReadAllText("ParserTest.txt"); // Test file only. will need to make dynamic for actual program (args)
         L.Lexer lexer = new L.Lexer(source);
-        E.Emitter emitter = new E.Emitter("out.asm");
+        E.Emitter emitter = new E.Emitter("output.asm");
         P.Parser parser = new P.Parser(lexer, emitter);
         
 
