@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ParserTest.txt" />
+    <None Remove="ParserText.Teeny" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="ParserTest.txt">
+    <Content Include="ParserText.Teeny">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

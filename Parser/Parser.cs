@@ -219,11 +219,12 @@ namespace Parser
             {
                 string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
                 Emitter.EmitTextLine($"{stringRef}]");
-                Emitter.EmitTextLine("call printf");
+                Emitter.EmitTextLine("call printf\n");
                 NextToken();
             }
             else
             {
+                Emitter.EmitTextLine($"format]");
                 Expression();
             }
         }
@@ -291,13 +292,16 @@ namespace Parser
         {
             if (CheckToken(Token.TokenType.IDENT))
             {
+                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]\n");
+                Emitter.EmitTextLine("call printf\n");
                 emitterTestString += CurrToken.TokenText;
                 //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
                 MatchToken(Token.TokenType.IDENT);
             }
             else
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitTextLine($"mov rdx, {CurrToken.TokenText}\n");
+                Emitter.EmitTextLine("call printf\n");
                 //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
                 MatchToken(Token.TokenType.NUMBER);
             }

@@ -1,5 +1,2 @@
 ﻿PRINT "Hello, World from my own compiler!"
-
-
-
-
+PRINT 8
