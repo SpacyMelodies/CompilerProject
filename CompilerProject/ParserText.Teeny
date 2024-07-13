@@ -1,2 +1,4 @@
 ﻿PRINT "Hello, World from my own compiler!"
 PRINT 8
+LET hello = "boss"
+PRINT hello

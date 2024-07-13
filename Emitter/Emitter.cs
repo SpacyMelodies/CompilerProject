@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -54,6 +55,12 @@ namespace Emitter
             varIndex++;
             return index;
            
+        }
+
+        public void CreateData(string tokenText, string identString)
+        {
+            Data += $"{identString} db {tokenText}, 0xd, 0xa, 0\n";
+            varIndex++;
         }
     }
 }

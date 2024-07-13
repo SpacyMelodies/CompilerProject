@@ -177,9 +177,19 @@ namespace Parser
             {
                 variables.Add(CurrToken.TokenText);
             }
+            string identString = CurrToken.TokenText;
             MatchToken(Token.TokenType.IDENT);
             MatchToken(Token.TokenType.EQ);
-            Expression();
+            if (CheckToken(Token.TokenType.STRING))
+            {
+                Emitter.CreateData(CurrToken.TokenText, identString);
+                NextToken();
+            }
+            else
+            {
+                Expression();
+            }
+            
         }
 
         private void ParseLoop()
@@ -224,7 +234,6 @@ namespace Parser
             }
             else
             {
-                Emitter.EmitTextLine($"format]");
                 Expression();
             }
         }
@@ -292,7 +301,7 @@ namespace Parser
         {
             if (CheckToken(Token.TokenType.IDENT))
             {
-                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]\n");
+                Emitter.EmitTextLine($"{CurrToken.TokenText}]\n");
                 Emitter.EmitTextLine("call printf\n");
                 emitterTestString += CurrToken.TokenText;
                 //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
@@ -300,6 +309,7 @@ namespace Parser
             }
             else
             {
+                Emitter.EmitTextLine($"format]");
                 Emitter.EmitTextLine($"mov rdx, {CurrToken.TokenText}\n");
                 Emitter.EmitTextLine("call printf\n");
                 //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
