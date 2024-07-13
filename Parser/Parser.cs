@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Lexer;
 
-namespace Parser
+namespace Parser // 07/13 to do notes: move print statements from Primary up to PrintParse (figure out how)
 {
     public class Parser
     {
@@ -236,6 +236,7 @@ namespace Parser
             {
                 Expression();
             }
+
         }
 
         private void NewLine()
@@ -297,7 +298,7 @@ namespace Parser
             }
             Primary();
         }
-        private void Primary()
+        private void Primary() // NOTE TO SELF: I cant have print statements down here, I need to move them up to the ParsePrint
         {
             if (CheckToken(Token.TokenType.IDENT))
             {
