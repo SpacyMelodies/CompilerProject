@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Lexer;
 
-namespace Parser // 07/13 to do notes: move print statements from Primary up to PrintParse (figure out how)
+namespace Parser 
 {
     public class Parser
     {
@@ -161,10 +161,14 @@ namespace Parser // 07/13 to do notes: move print statements from Primary up to 
                 }
                 labelsDeclared.Add(CurrToken.TokenText);
             }
-            else
+            else // Input from user
             {
-                variables.Add(CurrToken.TokenText);
                 NextToken();
+                variables.Add(CurrToken.TokenText);
+                Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
+                Emitter.EmitTextLine("lea rcx, [formatString]");
+                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
+                Emitter.EmitTextLine("call scanf");
             }
             MatchToken(Token.TokenType.IDENT);
         }

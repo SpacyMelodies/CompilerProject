@@ -2,5 +2,7 @@
 PRINT "Hello, World from my own compiler!"
 LET hello = "boss"
 LET drag = "nono"
+INPUT nums
 PRINT hello
+print nums
 
