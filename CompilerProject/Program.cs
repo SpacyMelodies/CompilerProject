@@ -19,7 +19,7 @@ internal class Program
 
         Console.WriteLine("Compilation complete");
 
-        Console.ReadLine();
+       int myint =  Console.Read();
 
     }
 }

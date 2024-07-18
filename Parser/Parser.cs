@@ -132,7 +132,8 @@ namespace Parser
                     break;
                 case Token.TokenType.LABEL:
                 case Token.TokenType.GOTO:
-                case Token.TokenType.INPUT:
+                case Token.TokenType.INPUTNUM:
+                case Token.TokenType.INPUTSTR:
                     ParseIdentifier();
                     break;
                 default:
@@ -161,7 +162,16 @@ namespace Parser
                 }
                 labelsDeclared.Add(CurrToken.TokenText);
             }
-            else // Input from user
+            else if (CheckToken(Token.TokenType.INPUTNUM)) // Input from user
+            {
+                NextToken();
+                variables.Add(CurrToken.TokenText);
+                Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
+                Emitter.EmitTextLine("lea rcx, [formatNum]");
+                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
+                Emitter.EmitTextLine("call scanf");
+            }
+            else
             {
                 NextToken();
                 variables.Add(CurrToken.TokenText);
