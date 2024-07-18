@@ -1,5 +1,6 @@
-﻿PRINT "Hello, World from my own compiler!"
-PRINT 8
+﻿PRINT 8
+PRINT "Hello, World from my own compiler!"
 LET hello = "boss"
 LET drag = "nono"
 PRINT hello
+

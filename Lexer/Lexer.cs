@@ -75,7 +75,7 @@ namespace Lexer
                         break;
                     }
                 case '=':
-                    if (Peek() == '=')
+                    if (Peek() == '=') // if we are looking at a = and next is an = return ==
                     {
                         token = new Token(currChar + Peek().ToString(), Token.TokenType.EQEQ);
                         NextChar();
@@ -231,9 +231,10 @@ namespace Lexer
                     valueString += currChar;
                     NextChar();
                 }
-            }          
+            }
+            valueString += currChar; // adds the last char to the string
             NextChar();
-            valueString += currChar;
+            valueString += currChar; // adds the last "
             return valueString;
         }
 

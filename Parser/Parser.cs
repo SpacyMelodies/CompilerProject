@@ -210,6 +210,7 @@ namespace Parser // 07/13 to do notes: move print statements from Primary up to 
         private void ParseIfThen()
         {
             Console.WriteLine("STATEMENT - IF");
+            Emitter.EmitText("CMP ");
             NextToken();
             Comparison();
             MatchToken(Token.TokenType.THEN);
@@ -232,9 +233,17 @@ namespace Parser // 07/13 to do notes: move print statements from Primary up to 
                 Emitter.EmitTextLine("call printf\n");
                 NextToken();
             }
-            else
+            else if (CheckToken(Token.TokenType.IDENT))
             {
                 Expression();
+                Emitter.EmitTextLine("]");
+                Emitter.EmitTextLine("call printf\n");
+            }
+            else
+            {
+                Emitter.EmitText($"format]\nmov rdx, ");
+                Expression();
+                Emitter.EmitTextLine("\ncall printf\n");
             }
 
         }
@@ -298,22 +307,15 @@ namespace Parser // 07/13 to do notes: move print statements from Primary up to 
             }
             Primary();
         }
-        private void Primary() // NOTE TO SELF: I cant have print statements down here, I need to move them up to the ParsePrint
+        private void Primary() 
         {
+            Emitter.EmitText($"{CurrToken.TokenText}");
             if (CheckToken(Token.TokenType.IDENT))
             {
-                Emitter.EmitTextLine($"{CurrToken.TokenText}]\n");
-                Emitter.EmitTextLine("call printf\n");
-                emitterTestString += CurrToken.TokenText;
-                //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
-                MatchToken(Token.TokenType.IDENT);
+                MatchToken(Token.TokenType.IDENT);               
             }
             else
             {
-                Emitter.EmitTextLine($"format]");
-                Emitter.EmitTextLine($"mov rdx, {CurrToken.TokenText}\n");
-                Emitter.EmitTextLine("call printf\n");
-                //Console.WriteLine($"PRIMARY - " + CurrToken.TokenText);
                 MatchToken(Token.TokenType.NUMBER);
             }
         }
