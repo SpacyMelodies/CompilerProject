@@ -17,7 +17,8 @@ namespace Parser
         private Lexer.Token CurrToken { get; set; }
         private Lexer.Token PeekToken { get; set; }
 
-        private List<string> variables;
+        private List<string> stringVars;
+        private List<string> numberVars;
         private List<string> labelsDeclared;
         private List<string> labelsGotod;
 
@@ -31,7 +32,8 @@ namespace Parser
             CurrToken = lexer.GetToken(); // initializes the first two tokens
             PeekToken = lexer.GetToken();
 
-            variables = new List<string>();
+            stringVars = new List<string>();
+            numberVars = new List<string>();
             labelsDeclared = new List<string>();
             labelsGotod = new List<string>();
         }
@@ -165,7 +167,7 @@ namespace Parser
             else if (CheckToken(Token.TokenType.INPUTNUM)) // Input from user
             {
                 NextToken();
-                variables.Add(CurrToken.TokenText);
+                numberVars.Add(CurrToken.TokenText);
                 Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
                 Emitter.EmitTextLine("lea rcx, [formatNum]");
                 Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
@@ -174,7 +176,7 @@ namespace Parser
             else
             {
                 NextToken();
-                variables.Add(CurrToken.TokenText);
+                stringVars.Add(CurrToken.TokenText);
                 Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
                 Emitter.EmitTextLine("lea rcx, [formatString]");
                 Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
@@ -187,9 +189,16 @@ namespace Parser
         {
             Console.WriteLine("STATEMENT - LET");
             NextToken();
-            if (!variables.Contains(CurrToken.TokenText))
+            if (!stringVars.Contains(CurrToken.TokenText) || !numberVars.Contains(CurrToken.TokenText))
             {
-                variables.Add(CurrToken.TokenText);
+                if (CheckPeek(Token.TokenType.NUMBER))
+                {
+                    numberVars.Add(CurrToken.TokenText);
+                }
+                else
+                {
+                    stringVars.Add(CurrToken.TokenText);
+                }
             }
             string identString = CurrToken.TokenText;
             MatchToken(Token.TokenType.IDENT);
@@ -201,7 +210,10 @@ namespace Parser
             }
             else
             {
-                Expression();
+                int.TryParse(CurrToken.TokenText, out int token);
+                double.TryParse(CurrToken.TokenText, out double value);
+                Emitter.CreateData(token, identString);
+                NextToken();
             }
             
         }
@@ -242,25 +254,35 @@ namespace Parser
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
+                Emitter.EmitText($"formatString]\nmov rdx, ");
                 string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
-                Emitter.EmitTextLine($"{stringRef}]");
+                Emitter.EmitTextLine($"{stringRef}");
                 Emitter.EmitTextLine("call printf\n");
                 NextToken();
             }
             else if (CheckToken(Token.TokenType.IDENT))
             {
-                Expression();
-                Emitter.EmitTextLine("]");
-                Emitter.EmitTextLine("call printf\n");
+                if(numberVars.Contains(CurrToken.TokenText)) // if the variable is a number, set up that print statement
+                {
+                    Emitter.EmitText($"formatNum]\nmov rdx, [");
+                    Expression();
+                    Emitter.EmitTextLine("]\ncall printf\n");
+                }
+                else
+                {
+                    Emitter.EmitText($"formatString]\nmov rdx, ");
+                    Expression();
+                    Emitter.EmitTextLine("\ncall printf\n");
+                }               
             }
-            else
+            else // if its a constant number
             {
-                Emitter.EmitText($"format]\nmov rdx, ");
+                Emitter.EmitText($"formatNum]\nmov rdx, ");
                 Expression();
                 Emitter.EmitTextLine("\ncall printf\n");
             }
 
-        }
+        }// need to fix parse print
 
         private void NewLine()
         {

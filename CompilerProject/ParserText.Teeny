@@ -2,8 +2,9 @@
 PRINT "Hello, World from my own compiler!"
 LET hello = "boss"
 LET drag = "nono"
+LET number = 8
 INPUTNUM nums
 INPUTSTR myStr
 PRINT hello
-print nums
+PRINT nums
 

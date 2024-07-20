@@ -67,5 +67,11 @@ namespace Emitter
             Data += $"{identString} db {tokenText}, 0xd, 0xa, 0\n";
             varIndex++;
         }
+
+        public void CreateData(int token, string identString)
+        {
+            Data += $"{identString} dq {token}\n";
+            varIndex++;
+        }
     }
 }
