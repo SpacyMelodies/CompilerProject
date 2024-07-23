@@ -157,7 +157,7 @@ namespace Parser
             }
             else if (CheckToken(Token.TokenType.LABEL))
             {
-                NextToken();
+                NextToken(); 
                 if (labelsDeclared.Contains(CurrToken.TokenText))
                 {
                     Abort($"{CurrToken.TokenText} has already been declared as a label");
@@ -171,16 +171,16 @@ namespace Parser
                 Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
                 Emitter.EmitTextLine("lea rcx, [formatNum]");
                 Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
+                Emitter.EmitTextLine("xor rax, rax");
                 Emitter.EmitTextLine("call scanf");
             }
             else
             {
                 NextToken();
                 stringVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
-                Emitter.EmitTextLine("lea rcx, [formatString]");
-                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
-                Emitter.EmitTextLine("call scanf");
+                Emitter.EmitBssLine(CurrToken.TokenText + " resb 256");
+                Emitter.EmitBssLine("chars resb 4");
+                Emitter.EmitTextLine($"sub rsp, 40\r\nmov rcx, -10 ;-10 = stdinputhandle\r\ncall GetStdHandle\r\nmov rcx, rax\r\n xor rdx, rdx\r\nmov rdx, {CurrToken.TokenText}\r\nmov r8, 255\r\nmov r9, chars\r\nmov rax, qword 0\r\nmov qword [rsp+0x20], rax\r\ncall ReadConsoleA\r\nmovzx r12, byte[{CurrToken.TokenText}]\r\nadd rsp, 40");
             }
             MatchToken(Token.TokenType.IDENT);
         }
@@ -189,6 +189,8 @@ namespace Parser
         {
             Console.WriteLine("STATEMENT - LET");
             NextToken();
+            string identString = CurrToken.TokenText;  
+            MatchToken(Token.TokenType.IDENT);
             if (!stringVars.Contains(CurrToken.TokenText) || !numberVars.Contains(CurrToken.TokenText))
             {
                 if (CheckPeek(Token.TokenType.NUMBER))
@@ -200,18 +202,16 @@ namespace Parser
                     stringVars.Add(CurrToken.TokenText);
                 }
             }
-            string identString = CurrToken.TokenText;
-            MatchToken(Token.TokenType.IDENT);
             MatchToken(Token.TokenType.EQ);
             if (CheckToken(Token.TokenType.STRING))
             {
                 Emitter.CreateData(CurrToken.TokenText, identString);
                 NextToken();
             }
-            else
+            else // this needs to be fixed for doubles
             {
                 int.TryParse(CurrToken.TokenText, out int token);
-                double.TryParse(CurrToken.TokenText, out double value);
+                //double.TryParse(CurrToken.TokenText, out double value);
                 Emitter.CreateData(token, identString);
                 NextToken();
             }
@@ -257,6 +257,7 @@ namespace Parser
                 Emitter.EmitText($"formatString]\nmov rdx, ");
                 string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
                 Emitter.EmitTextLine($"{stringRef}");
+                Emitter.EmitTextLine("xor rax, rax");
                 Emitter.EmitTextLine("call printf\n");
                 NextToken();
             }
@@ -266,20 +267,24 @@ namespace Parser
                 {
                     Emitter.EmitText($"formatNum]\nmov rdx, [");
                     Expression();
-                    Emitter.EmitTextLine("]\ncall printf\n");
+                    Emitter.EmitTextLine("]");
+                    Emitter.EmitTextLine("xor rax, rax");
+                    Emitter.EmitTextLine("call printf\n");
                 }
                 else
                 {
                     Emitter.EmitText($"formatString]\nmov rdx, ");
                     Expression();
-                    Emitter.EmitTextLine("\ncall printf\n");
+                    Emitter.EmitTextLine("\nxor rax, rax");
+                    Emitter.EmitTextLine("call printf\n");
                 }               
             }
             else // if its a constant number
             {
                 Emitter.EmitText($"formatNum]\nmov rdx, ");
                 Expression();
-                Emitter.EmitTextLine("\ncall printf\n");
+                Emitter.EmitTextLine("\nxor rax, rax");
+                Emitter.EmitTextLine("call printf\n");
             }
 
         }// need to fix parse print

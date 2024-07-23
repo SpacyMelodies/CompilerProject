@@ -132,7 +132,7 @@ namespace Lexer
                     break;
                 case var _check when (char.IsLetter(currChar)):
                     string lexeme = GetLexeme();
-                    if (Enum.TryParse(lexeme, true, out Token.TokenType result))
+                    if (Enum.TryParse(lexeme, false, out Token.TokenType result)) // chagned ignore case 07/22 from T -> false. 
                     {
                         token = new Token(lexeme, result);
                     }
