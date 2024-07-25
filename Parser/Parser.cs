@@ -12,6 +12,7 @@ namespace Parser
 {
     public class Parser
     {
+        public static int LineNumber { get; set; } = 1;
         public Lexer.Lexer Lexer { get; set; }
         public Emitter.Emitter Emitter { get; set; }
         private Lexer.Token CurrToken { get; set; }
@@ -69,7 +70,7 @@ namespace Parser
         public void Abort(string message)
         {
             Console.WriteLine();
-            Console.Write("Parser Error: " + message);
+            Console.Write("Parser Error: " + message + $" at line {LineNumber}");
             Console.WriteLine();
             throw new Exception("Parser Error: " + message);
 
@@ -178,9 +179,9 @@ namespace Parser
             {
                 NextToken();
                 stringVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resb 256");
+                Emitter.EmitBssLine(CurrToken.TokenText + " resb 512");
                 Emitter.EmitBssLine("chars resb 4");
-                Emitter.EmitTextLine($"sub rsp, 40\r\nmov rcx, -10 ;-10 = stdinputhandle\r\ncall GetStdHandle\r\nmov rcx, rax\r\n xor rdx, rdx\r\nmov rdx, {CurrToken.TokenText}\r\nmov r8, 255\r\nmov r9, chars\r\nmov rax, qword 0\r\nmov qword [rsp+0x20], rax\r\ncall ReadConsoleA\r\nmovzx r12, byte[{CurrToken.TokenText}]\r\nadd rsp, 40");
+                Emitter.EmitTextLine($"sub rsp, 40\r\nmov rcx, -10 ;-10 = stdinputhandle\r\ncall GetStdHandle\r\nmov rcx, rax\r\n xor rdx, rdx\r\nmov rdx, {CurrToken.TokenText}\r\nmov r8, 511\r\nmov r9, chars\r\nmov rax, qword 0\r\nmov qword [rsp+0x20], rax\r\ncall ReadConsoleA\r\nadd rsp, 40");
             }
             MatchToken(Token.TokenType.IDENT);
         }
@@ -254,11 +255,12 @@ namespace Parser
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
-                Emitter.EmitText($"formatString]\nmov rdx, ");
+                Emitter.EmitText($"formatString]\nlea rdx, ");
                 string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
-                Emitter.EmitTextLine($"{stringRef}");
+                Emitter.EmitTextLine($"[{stringRef}]");
                 Emitter.EmitTextLine("xor rax, rax");
-                Emitter.EmitTextLine("call printf\n");
+                Emitter.EmitTextLine("call printf");
+                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
                 NextToken();
             }
             else if (CheckToken(Token.TokenType.IDENT))
@@ -269,14 +271,16 @@ namespace Parser
                     Expression();
                     Emitter.EmitTextLine("]");
                     Emitter.EmitTextLine("xor rax, rax");
-                    Emitter.EmitTextLine("call printf\n");
+                    Emitter.EmitTextLine("call printf");
+                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
                 }
                 else
                 {
-                    Emitter.EmitText($"formatString]\nmov rdx, ");
+                    Emitter.EmitText($"formatString]\nlea rdx,[");
                     Expression();
-                    Emitter.EmitTextLine("\nxor rax, rax");
-                    Emitter.EmitTextLine("call printf\n");
+                    Emitter.EmitTextLine("]\nxor rax, rax");
+                    Emitter.EmitTextLine("call printf");
+                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
                 }               
             }
             else // if its a constant number
@@ -284,17 +288,20 @@ namespace Parser
                 Emitter.EmitText($"formatNum]\nmov rdx, ");
                 Expression();
                 Emitter.EmitTextLine("\nxor rax, rax");
-                Emitter.EmitTextLine("call printf\n");
+                Emitter.EmitTextLine("call printf");
+                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
             }
 
         }// need to fix parse print
 
         private void NewLine()
         {
+            LineNumber++;
             Console.WriteLine("NEW LINE");
             MatchToken(Token.TokenType.NEWLINE);
             while (CheckToken(Token.TokenType.NEWLINE))
             {
+                LineNumber++;
                 NextToken();
             }
         }

@@ -12,8 +12,6 @@ internal class Program
         L.Lexer lexer = new L.Lexer(source);
         E.Emitter emitter = new E.Emitter("output.asm");
         P.Parser parser = new P.Parser(lexer, emitter);
-        
-
         parser.Program();
         emitter.WriteFile();
 
