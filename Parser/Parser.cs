@@ -169,15 +169,23 @@ namespace Parser
             }
             else if (CheckToken(Token.TokenType.INPUTNUM)) // Input from user
             {
-                numberVars.Add(CurrToken.TokenText);
+                if (!numberVars.Contains(CurrToken.TokenText)) 
+                {
+                    numberVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"float {CurrToken.TokenText};");
+                }
+                // edit for error checking!!!!
+                Emitter.EmitTextLine($"scanf(\"%f\",{CurrToken.TokenText})");
               
             }
             else
             {
-                stringVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resb 512");
-                Emitter.EmitBssLine("chars resb 4");
-                Emitter.EmitTextLine($"sub rsp, 40\r\nmov rcx, -10 ;-10 = stdinputhandle\r\ncall GetStdHandle\r\nmov rcx, rax\r\n xor rdx, rdx\r\nmov rdx, {CurrToken.TokenText}\r\nmov r8, 511\r\nmov r9, chars\r\nmov rax, qword 0\r\nmov qword [rsp+0x20], rax\r\ncall ReadConsoleA\r\nadd rsp, 40");
+                if(!stringVars.Contains(CurrToken.TokenText))
+                {
+                    stringVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"char {CurrToken.TokenText}[512];");
+                } 
+                Emitter.EmitTextLine($"fgets({CurrToken.TokenText}, 512, stdin)");
             }
             MatchToken(Token.TokenType.IDENT);
         }
@@ -275,7 +283,6 @@ namespace Parser
         private void NewLine()
         {
             LineNumber++;
-            Console.WriteLine("NEW LINE");
             MatchToken(Token.TokenType.NEWLINE);
             while (CheckToken(Token.TokenType.NEWLINE))
             {
@@ -289,13 +296,19 @@ namespace Parser
             Expression();
             if ((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Expression();
             }
             else
             {
                 Abort($"Comparison error: expected comparator got \"{CurrToken.Type}\"");
+            }
+            while((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
+            {
+                Emitter.EmitText(CurrToken.TokenText);
+                NextToken();
+                Expression();
             }
         }
         private void Expression()
@@ -305,7 +318,7 @@ namespace Parser
             Term();
             while (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Term();
             }
@@ -317,7 +330,7 @@ namespace Parser
             Unary();
             while (CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Unary();
             }
@@ -328,20 +341,25 @@ namespace Parser
            // Console.WriteLine("UNARY");
             if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
             }
             Primary();
         }
         private void Primary() 
         {
-            Emitter.EmitText($"{CurrToken.TokenText}");
             if (CheckToken(Token.TokenType.IDENT))
             {
+                if(!numberVars.Contains(CurrToken.TokenText) || !stringVars.Contains(CurrToken.TokenText))
+                {
+                    Abort("Error: referencing variable before assignment");
+                }
+                Emitter.EmitText(CurrToken.TokenText);
                 MatchToken(Token.TokenType.IDENT);               
             }
             else
             {
+                Emitter.EmitText(CurrToken.TokenText);
                 MatchToken(Token.TokenType.NUMBER);
             }
         }
