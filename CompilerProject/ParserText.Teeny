@@ -1,23 +1,4 @@
-﻿PRINT 8
-PRINT "Hello, World from my own compiler!"
-LET hello = "boss"
-LET drag = "nono"
-LET number = 8
-INPUTNUM nums
-INPUTSTR myStr
-PRINT nums
-PRINT myStr
-
-PRINT "How many fibonacci numbers do you want?"
-INPUT nums
-PRINT ""
-
-LET a = 0
-LET b = 1
-WHILE nums > 0 REPEAT
-    PRINT a
-    LET c = a + b
+﻿    LET a = 3
+    LET b = 2
+    LET c = a 
     LET a = b
-    LET b = c
-    LET nums = nums - 1
-ENDWHILE

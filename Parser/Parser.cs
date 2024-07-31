@@ -196,11 +196,19 @@ namespace Parser
             {
                 if (CheckPeek(Token.TokenType.NUMBER))
                 {
-                    numberVars.Add(CurrToken.TokenText);
+                    numberVars.Add(identString);
+                }
+                else if (CheckPeek(Token.TokenType.IDENT))
+                {
+                    NextToken();
+                    if (numberVars.Contains(CurrToken.TokenText))
+                    {
+
+                    }
                 }
                 else
                 {
-                    stringVars.Add(CurrToken.TokenText);
+                    stringVars.Add(identString);
                 }
             }
             MatchToken(Token.TokenType.EQ);
