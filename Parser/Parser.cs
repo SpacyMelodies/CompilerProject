@@ -79,7 +79,8 @@ namespace Parser
 
         public void Program()
         {
-            Console.WriteLine("PROGRAM");
+            Emitter.EmitTextLine("#include <stdio.h>");
+            Emitter.EmitTextLine("int main(void){");
 
             while (CheckToken(Token.TokenType.NEWLINE))
             {
@@ -93,7 +94,9 @@ namespace Parser
             string labelListComp = CompareLabelLists();
             if (labelListComp == string.Empty)
             {
-                Emitter.CreateASMFile();
+                Emitter.EmitTextLine("return 0");
+                Emitter.EmitTextLine("}");
+                Emitter.CreateCFile();
             }
             else
             {
@@ -148,36 +151,29 @@ namespace Parser
         }
 
         private void ParseIdentifier()
-        {
-            Console.WriteLine("STATEMENT - " + CurrToken.Type.ToString());
-
+        {         
+            NextToken();
             if (CheckToken(Token.TokenType.GOTO))
-            {
-                NextToken();
+            {                
                 labelsGotod.Add(CurrToken.TokenText);
+                Emitter.EmitTextLine($"goto {CurrToken.TokenText};");
             }
             else if (CheckToken(Token.TokenType.LABEL))
             {
-                NextToken(); 
                 if (labelsDeclared.Contains(CurrToken.TokenText))
                 {
                     Abort($"{CurrToken.TokenText} has already been declared as a label");
                 }
                 labelsDeclared.Add(CurrToken.TokenText);
+                Emitter.EmitTextLine($"{CurrToken.TokenText}:");
             }
             else if (CheckToken(Token.TokenType.INPUTNUM)) // Input from user
             {
-                NextToken();
                 numberVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
-                Emitter.EmitTextLine("lea rcx, [formatNum]");
-                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
-                Emitter.EmitTextLine("xor rax, rax");
-                Emitter.EmitTextLine("call scanf");
+              
             }
             else
             {
-                NextToken();
                 stringVars.Add(CurrToken.TokenText);
                 Emitter.EmitBssLine(CurrToken.TokenText + " resb 512");
                 Emitter.EmitBssLine("chars resb 4");
@@ -188,116 +184,90 @@ namespace Parser
 
         private void ParseVariable()
         {
-            Console.WriteLine("STATEMENT - LET");
             NextToken();
-            string identString = CurrToken.TokenText;  
-            MatchToken(Token.TokenType.IDENT);
             if (!stringVars.Contains(CurrToken.TokenText) || !numberVars.Contains(CurrToken.TokenText))
             {
                 if (CheckPeek(Token.TokenType.NUMBER))
                 {
-                    numberVars.Add(identString);
-                }
-                else if (CheckPeek(Token.TokenType.IDENT))
-                {
-                    NextToken();
-                    if (numberVars.Contains(CurrToken.TokenText))
-                    {
-
-                    }
+                    numberVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"float {CurrToken.TokenText};");
                 }
                 else
                 {
-                    stringVars.Add(identString);
+                    stringVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"string {CurrToken.TokenText};");
                 }
             }
+            Emitter.EmitText($"{CurrToken.TokenText} = ");
+            MatchToken(Token.TokenType.IDENT);
             MatchToken(Token.TokenType.EQ);
-            if (CheckToken(Token.TokenType.STRING))
-            {
-                Emitter.CreateData(CurrToken.TokenText, identString);
-                NextToken();
-            }
-            else // this needs to be fixed for doubles
-            {
-                int.TryParse(CurrToken.TokenText, out int token);
-                //double.TryParse(CurrToken.TokenText, out double value);
-                Emitter.CreateData(token, identString);
-                NextToken();
-            }
+
+            // stuff will need to be added to parse strings
+
+            Expression();
+            Emitter.EmitTextLine(";");
+            
             
         }
 
         private void ParseLoop()
         {
-            Console.WriteLine("STATEMENT - WHILE");
             NextToken();
+            Emitter.EmitText("while(");
             Comparison();
             MatchToken(Token.TokenType.REPEAT);
             NewLine();
+            Emitter.EmitText("){");
             while (!CheckToken(Token.TokenType.ENDWHILE))
             {
                 Statement();
             }
             MatchToken(Token.TokenType.ENDWHILE);
+            Emitter.EmitTextLine("}");
             // when we return to statement, we get the newline check
         }
 
         private void ParseIfThen()
         {
-            Console.WriteLine("STATEMENT - IF");
-            Emitter.EmitText("CMP ");
             NextToken();
+            Emitter.EmitText("if(");
             Comparison();
             MatchToken(Token.TokenType.THEN);
             NewLine();
+            Emitter.EmitTextLine("){");
             while (!CheckToken(Token.TokenType.ENDIF))
             {
                 Statement();
             }
             MatchToken(Token.TokenType.ENDIF);
+            Emitter.EmitTextLine("}");
         }
 
         private void ParsePrint()
         {
-            Emitter.EmitText("\nlea rcx, [");
+           
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
-                Emitter.EmitText($"formatString]\nlea rdx, ");
-                string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
-                Emitter.EmitTextLine($"[{stringRef}]");
-                Emitter.EmitTextLine("xor rax, rax");
-                Emitter.EmitTextLine("call printf");
-                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                Emitter.EmitText("printf(\"" + CurrToken.TokenText + "\\n\");");
                 NextToken();
             }
             else if (CheckToken(Token.TokenType.IDENT))
             {
                 if(numberVars.Contains(CurrToken.TokenText)) // if the variable is a number, set up that print statement
                 {
-                    Emitter.EmitText($"formatNum]\nmov rdx, [");
-                    Expression();
-                    Emitter.EmitTextLine("]");
-                    Emitter.EmitTextLine("xor rax, rax");
-                    Emitter.EmitTextLine("call printf");
-                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                    Emitter.EmitTextLine($"THIS NEEDS WORK - PARSEPRINT IDENT NUMBER");
                 }
                 else
                 {
-                    Emitter.EmitText($"formatString]\nlea rdx,[");
-                    Expression();
-                    Emitter.EmitTextLine("]\nxor rax, rax");
-                    Emitter.EmitTextLine("call printf");
-                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                    Emitter.EmitTextLine($"THIS NEEDS WORK - PARSEPRINT IDENT STRING");
                 }               
             }
-            else // if its a constant number
+            else // if its a constant number or expression
             {
-                Emitter.EmitText($"formatNum]\nmov rdx, ");
+                Emitter.EmitText("printf(\"%" + ".2f\\n\", (float)(");
                 Expression();
-                Emitter.EmitTextLine("\nxor rax, rax");
-                Emitter.EmitTextLine("call printf");
-                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                Emitter.EmitTextLine("));");
             }
 
         }// need to fix parse print
