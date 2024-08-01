@@ -8,7 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="build.bat" />
     <None Remove="ParserText.Teeny" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
