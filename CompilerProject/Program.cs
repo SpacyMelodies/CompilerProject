@@ -8,12 +8,11 @@ internal class Program
     // driver program for testing lexer
     private static void Main(string[] args)
     {
-        //string source = "IF+-123 foo*THEN/";
         Console.Write("Enter the Tiny file path you wish to compile: ");
         string path = Console.ReadLine();
         string source = File.ReadAllText(path);
         L.Lexer lexer = new L.Lexer(source);
-        E.Emitter emitter = new E.Emitter($"output.c");
+        E.Emitter emitter = new E.Emitter($"output1.c");
         P.Parser parser = new P.Parser(lexer, emitter);
         parser.Program();
         emitter.WriteFile();
@@ -23,7 +22,7 @@ internal class Program
         processStartInfo.CreateNoWindow = true;
         processStartInfo.FileName = "CMD.exe";
         processStartInfo.Arguments = $"/C build.bat";
-        processStartInfo.Arguments += $"/C cl output.c";
+        //processStartInfo.Arguments += $"/C cl output1.c";
         p.StartInfo = processStartInfo;
         p.Start();
         p.WaitForExit();
@@ -33,13 +32,13 @@ internal class Program
         {
             Process z = new Process();
             z.StartInfo.FileName = "CMD.exe";
-            z.StartInfo.Arguments = $"/C output.exe";
+            z.StartInfo.Arguments = $"/C output1.exe";
             z.Start();
             z.Close();
         }
         else
         {
-            Console.WriteLine("file saved as output.exe");
+            Console.WriteLine("file saved as output1.exe");
             Console.ReadLine();
         }
 
