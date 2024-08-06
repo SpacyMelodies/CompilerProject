@@ -12,7 +12,6 @@ namespace Parser
 {
     public class Parser
     {
-        public static int LineNumber { get; set; } = 1;
         public Lexer.Lexer Lexer { get; set; }
         public Emitter.Emitter Emitter { get; set; }
         private Lexer.Token CurrToken { get; set; }
@@ -70,7 +69,7 @@ namespace Parser
         public void Abort(string message)
         {
             Console.WriteLine();
-            Console.Write("Parser Error: " + message + $" at line {LineNumber}");
+            Console.Write("Parser Error: " + message);
             Console.WriteLine();
             throw new Exception("Parser Error: " + message);
 
@@ -298,11 +297,9 @@ namespace Parser
 
         private void NewLine()
         {
-            LineNumber++;
             MatchToken(Token.TokenType.NEWLINE);
             while (CheckToken(Token.TokenType.NEWLINE))
             {
-                LineNumber++;
                 NextToken();
             }
         }

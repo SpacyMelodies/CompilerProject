@@ -8,6 +8,7 @@ internal class Program
     // driver program for testing lexer
     private static void Main(string[] args)
     {
+
         Console.Write("Enter the Tiny file path you wish to compile: ");
         string path = Console.ReadLine();
         string source = File.ReadAllText(path);
