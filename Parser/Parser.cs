@@ -21,9 +21,6 @@ namespace Parser
         private List<string> numberVars;
         private List<string> labelsDeclared;
         private List<string> labelsGotod;
-
-        string emitterTestString = string.Empty;
-
         public Parser(Lexer.Lexer lexer, Emitter.Emitter emitter)
         {
             this.Lexer = lexer;

@@ -9,7 +9,6 @@ namespace Emitter
 {
     public class Emitter
     {
-        private int varIndex = 0;
         public string FullPath { get; set; }
         private string Header { get; set; } 
         private string Text { get; set; }    

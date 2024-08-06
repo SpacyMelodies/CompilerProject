@@ -10,11 +10,14 @@ internal class Program
     {
 
         Console.Write("Enter the Tiny file path you wish to compile: ");
+
         string path = Console.ReadLine();
         string source = File.ReadAllText(path);
+
         L.Lexer lexer = new L.Lexer(source);
         E.Emitter emitter = new E.Emitter($"output1.c");
         P.Parser parser = new P.Parser(lexer, emitter);
+
         parser.Program();
         emitter.WriteFile();
 
@@ -27,6 +30,7 @@ internal class Program
         p.StartInfo = processStartInfo;
         p.Start();
         p.WaitForExit();
+
         Console.WriteLine("Compilation complete");
         Console.WriteLine("Do you want to run the file? y/n");
         if(Console.ReadLine().ToLower() == "y")
@@ -42,8 +46,5 @@ internal class Program
             Console.WriteLine("file saved as output1.exe");
             Console.ReadLine();
         }
-
-
-
     }
 }
