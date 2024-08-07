@@ -40,11 +40,6 @@ namespace Parser
             return tokenType == CurrToken.Type;
         }
 
-        public bool CheckPeek(Lexer.Token.TokenType tokenType)
-        {
-            return tokenType == PeekToken.Type;
-        }
-
         public void NextToken()
         {
             CurrToken = PeekToken;
@@ -202,7 +197,7 @@ namespace Parser
             MatchToken(Token.TokenType.EQ);
             if (!stringVars.Contains(identString) && !numberVars.Contains(identString))
             {
-                if (CurrToken.Type == Token.TokenType.NUMBER)
+                if (CheckToken(Token.TokenType.NUMBER))
                 {
                     numberVars.Add(identString);
                     Emitter.EmitText($"{identString} = ");
@@ -217,15 +212,9 @@ namespace Parser
             else
             {
                 Emitter.EmitText($"{identString} = ");
-
             }
-
-            // stuff will need to be added to parse strings
-
             Expression();
-            Emitter.EmitTextLine(";");
-            
-            
+            Emitter.EmitTextLine(";");   
         }
 
         private void ParseLoop()

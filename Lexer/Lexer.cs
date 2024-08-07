@@ -9,8 +9,8 @@ namespace Lexer
 {
     public class Lexer
     {
-        public char currChar{ get; set; }
-        public int currPos { get; set; }
+        private char currChar{ get; set; }
+        private int currPos { get; set; }
         public string source { get; set; }
         public Lexer(string source)
         {
