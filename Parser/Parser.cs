@@ -17,10 +17,10 @@ namespace Parser
         private Lexer.Token CurrToken { get; set; }
         private Lexer.Token PeekToken { get; set; }
 
-        private List<string> stringVars;
-        private List<string> numberVars;
-        private List<string> labelsDeclared;
-        private List<string> labelsGotod;
+        private List<string> stringVars = new List<string>();
+        private List<string> numberVars = new List<string>();
+        private List<string> labelsDeclared = new List<string>();
+        private List<string> labelsGotod = new List<string>();
         public Parser(Lexer.Lexer lexer, Emitter.Emitter emitter)
         {
             this.Lexer = lexer;
@@ -28,11 +28,6 @@ namespace Parser
 
             CurrToken = lexer.GetToken(); // initializes the first two tokens
             PeekToken = lexer.GetToken();
-
-            stringVars = new List<string>();
-            numberVars = new List<string>();
-            labelsDeclared = new List<string>();
-            labelsGotod = new List<string>();
         }
 
         public bool CheckToken(Lexer.Token.TokenType tokenType)
