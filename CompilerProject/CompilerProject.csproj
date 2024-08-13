@@ -9,11 +9,15 @@
 
   <ItemGroup>
     <None Remove="build.bat" />
+    <None Remove="NewProgram.TL" />
     <None Remove="ParserText.TL" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="build.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NewProgram.TL">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

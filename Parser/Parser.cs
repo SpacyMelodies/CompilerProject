@@ -30,17 +30,21 @@ namespace Parser
             PeekToken = lexer.GetToken();
         }
 
+        // Checks the current token type
         public bool CheckToken(Lexer.Token.TokenType tokenType)
         {
             return tokenType == CurrToken.Type;
         }
 
+        //shifts token pointers (properties)
         public void NextToken()
         {
             CurrToken = PeekToken;
             PeekToken = Lexer.GetToken();
         }
 
+        // validates current token is where it should be in AST
+        // if so, calls for next token. Else, calls Abort()
         public void MatchToken(Lexer.Token.TokenType tokenType)
         {
             if (!CheckToken(tokenType))
@@ -53,16 +57,18 @@ namespace Parser
             }
         }
 
+        // prints error message to console then throws exception
         public void Abort(string message)
         {
             Console.WriteLine();
             Console.Write("Parser Error: " + message);
             Console.WriteLine();
             throw new Exception("Parser Error: " + message);
-
-            //Environment.Exit(-1); Might include this in final
         }
-
+        
+        // Starting point in compilation of program
+        // emits valid starting C, then starts the full
+        // parsing process
         public void Program()
         {
             Emitter.EmitTextLine("#include <stdio.h>");
@@ -90,6 +96,7 @@ namespace Parser
             }
         }
 
+        // Checks that all 'goto' called labels are valid
         private string CompareLabelLists()
         {
             foreach (var label in labelsGotod)
@@ -105,7 +112,7 @@ namespace Parser
             }
             return string.Empty;
         }
-
+        //Checks current token and parses to valid C  using switch statement
         public void Statement()
         {
             switch (CurrToken.Type)
@@ -135,7 +142,7 @@ namespace Parser
             Emitter.EmitTextLine(""); 
             NewLine();
         }
-
+        // used to parse GOTO, INPUTNUM, INPUTSTR and LABEL Tokens
         private void ParseIdentifier()
         {         
             
@@ -180,7 +187,8 @@ namespace Parser
             }
             MatchToken(Token.TokenType.IDENT);
         }
-
+        // used to parse LET tokens
+       
         private void ParseVariable()
         {
             NextToken();
@@ -192,7 +200,13 @@ namespace Parser
             MatchToken(Token.TokenType.EQ);
             if (!stringVars.Contains(identString) && !numberVars.Contains(identString))
             {
-                if (CheckToken(Token.TokenType.NUMBER))
+                if (CheckToken(Token.TokenType.NUMBER) || CheckToken(Token.TokenType.MINUS))
+                {
+                    numberVars.Add(identString);
+                    Emitter.EmitText($"{identString} = ");
+                    Emitter.EmitHeaderLine($"float {identString};");
+                }
+                else if (CheckToken(Token.TokenType.IDENT) && (numberVars.Contains(CurrToken.TokenText)))
                 {
                     numberVars.Add(identString);
                     Emitter.EmitText($"{identString} = ");
@@ -211,7 +225,7 @@ namespace Parser
             Expression();
             Emitter.EmitTextLine(";");   
         }
-
+        // used to parse WHILE, REPEAT and ENDWHILE tokens
         private void ParseLoop()
         {
             NextToken();
@@ -228,7 +242,7 @@ namespace Parser
             Emitter.EmitTextLine("}");
             // when we return to statement, we get the newline check
         }
-
+        // used to parse IF, THEN and ENDIF tokens
         private void ParseIfThen()
         {
             NextToken();
@@ -244,7 +258,7 @@ namespace Parser
             MatchToken(Token.TokenType.ENDIF);
             Emitter.EmitTextLine("}");
         }
-
+        // used to parse PRINT tokens
         private void ParsePrint()
         {         
             NextToken();
@@ -275,7 +289,8 @@ namespace Parser
             }
             
         }
-
+        // handles new lines in code, ensuring each line has at least one
+        // and ignoring all others
         private void NewLine()
         {
             MatchToken(Token.TokenType.NEWLINE);
@@ -284,9 +299,9 @@ namespace Parser
                 NextToken();
             }
         }
+        // called by ParseLoop and ParseIfThen to handle comparisons
         private void Comparison()
         {
-           // Console.WriteLine("COMPARISON");
             Expression();
             if ((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
             {
@@ -305,10 +320,10 @@ namespace Parser
                 Expression();
             }
         }
+        // Expression, Term, Unary and Primary all work together to build valid
+        // expression statements. 
         private void Expression()
         {
-            //emitterTestString += CurrToken.TokenText;
-            //Console.WriteLine("EXPRESSION");
             Term();
             while (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
@@ -319,8 +334,6 @@ namespace Parser
         }
         private void Term()
         {
-            //emitterTestString += CurrToken.TokenText;
-            //Console.WriteLine("TERM");
             Unary();
             while (CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
             {
@@ -331,8 +344,6 @@ namespace Parser
         }
         private void Unary()
         {
-            //emitterTestString += CurrToken.TokenText;
-           // Console.WriteLine("UNARY");
             if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
                 Emitter.EmitText(CurrToken.TokenText);

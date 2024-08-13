@@ -132,7 +132,7 @@ namespace Lexer
                     break;
                 case var _check when (char.IsLetter(currChar)):
                     string lexeme = GetLexeme();
-                    if (Enum.TryParse(lexeme, false, out Token.TokenType result)) // chagned ignore case 07/22 from T -> false. 
+                    if (Enum.TryParse(lexeme, false, out Token.TokenType result))  
                     {
                         token = new Token(lexeme, result);
                     }
@@ -161,7 +161,7 @@ namespace Lexer
             return token;
         }
         
-        // returns a lexeme string to the caller, with checks defined for lexems
+        // returns a lexeme string to the caller, with checks defined for lexemes
         private string GetLexeme()
         {
             string valueString = "";
@@ -180,8 +180,8 @@ namespace Lexer
             return valueString;
         }
 
-        // returns a number string to the caller, with checks defined for numbers
-        private string GetNumber() // NOTE: see if I can get this a bit more concise
+        // returns a string representation of a number, with checks defined for numbers
+        private string GetNumber() 
         {
             string valueString = "";
             int decimalCount = 0;

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Lexer
 {
+    // Token class to hold our lexed Tokens into their Type and Content (TokenText)
     public class Token
     {
         public string TokenText { get; set; }
