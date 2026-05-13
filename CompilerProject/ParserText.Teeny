@@ -1,4 +1,0 @@
-﻿    LET a = 3
-    LET b = 2
-    LET c = a 
-    LET a = b

@@ -12,19 +12,15 @@ namespace Parser
 {
     public class Parser
     {
-        public static int LineNumber { get; set; } = 1;
         public Lexer.Lexer Lexer { get; set; }
         public Emitter.Emitter Emitter { get; set; }
         private Lexer.Token CurrToken { get; set; }
         private Lexer.Token PeekToken { get; set; }
 
-        private List<string> stringVars;
-        private List<string> numberVars;
-        private List<string> labelsDeclared;
-        private List<string> labelsGotod;
-
-        string emitterTestString = string.Empty;
-
+        private List<string> stringVars = new List<string>();
+        private List<string> numberVars = new List<string>();
+        private List<string> labelsDeclared = new List<string>();
+        private List<string> labelsGotod = new List<string>();
         public Parser(Lexer.Lexer lexer, Emitter.Emitter emitter)
         {
             this.Lexer = lexer;
@@ -32,29 +28,23 @@ namespace Parser
 
             CurrToken = lexer.GetToken(); // initializes the first two tokens
             PeekToken = lexer.GetToken();
-
-            stringVars = new List<string>();
-            numberVars = new List<string>();
-            labelsDeclared = new List<string>();
-            labelsGotod = new List<string>();
         }
 
+        // Checks the current token type
         public bool CheckToken(Lexer.Token.TokenType tokenType)
         {
             return tokenType == CurrToken.Type;
         }
 
-        public bool CheckPeek(Lexer.Token.TokenType tokenType)
-        {
-            return tokenType == PeekToken.Type;
-        }
-
+        //shifts token pointers (properties)
         public void NextToken()
         {
             CurrToken = PeekToken;
             PeekToken = Lexer.GetToken();
         }
 
+        // validates current token is where it should be in AST
+        // if so, calls for next token. Else, calls Abort()
         public void MatchToken(Lexer.Token.TokenType tokenType)
         {
             if (!CheckToken(tokenType))
@@ -67,19 +57,22 @@ namespace Parser
             }
         }
 
+        // prints error message to console then throws exception
         public void Abort(string message)
         {
             Console.WriteLine();
-            Console.Write("Parser Error: " + message + $" at line {LineNumber}");
+            Console.Write("Parser Error: " + message);
             Console.WriteLine();
             throw new Exception("Parser Error: " + message);
-
-            //Environment.Exit(-1); Might include this in final
         }
-
+        
+        // Starting point in compilation of program
+        // emits valid starting C, then starts the full
+        // parsing process
         public void Program()
         {
-            Console.WriteLine("PROGRAM");
+            Emitter.EmitTextLine("#include <stdio.h>");
+            Emitter.EmitTextLine("int main(void){");
 
             while (CheckToken(Token.TokenType.NEWLINE))
             {
@@ -93,7 +86,9 @@ namespace Parser
             string labelListComp = CompareLabelLists();
             if (labelListComp == string.Empty)
             {
-                Emitter.CreateASMFile();
+                Emitter.EmitTextLine("return 0;");
+                Emitter.EmitTextLine("}");
+                Emitter.CreateCFile();
             }
             else
             {
@@ -101,6 +96,7 @@ namespace Parser
             }
         }
 
+        // Checks that all 'goto' called labels are valid
         private string CompareLabelLists()
         {
             foreach (var label in labelsGotod)
@@ -116,7 +112,7 @@ namespace Parser
             }
             return string.Empty;
         }
-
+        //Checks current token and parses to valid C  using switch statement
         public void Statement()
         {
             switch (CurrToken.Type)
@@ -143,183 +139,173 @@ namespace Parser
                     Abort($"Statement error: currToken is {CurrToken.Type}, need a valid statement");
                     break;
             }
-            Emitter.EmitTextLine(""); // emits a new line for the asm file
+            Emitter.EmitTextLine(""); 
             NewLine();
         }
-
+        // used to parse GOTO, INPUTNUM, INPUTSTR and LABEL Tokens
         private void ParseIdentifier()
-        {
-            Console.WriteLine("STATEMENT - " + CurrToken.Type.ToString());
-
+        {         
+            
             if (CheckToken(Token.TokenType.GOTO))
             {
                 NextToken();
                 labelsGotod.Add(CurrToken.TokenText);
+                Emitter.EmitTextLine($"goto {CurrToken.TokenText};");
             }
             else if (CheckToken(Token.TokenType.LABEL))
             {
-                NextToken(); 
+                NextToken();
                 if (labelsDeclared.Contains(CurrToken.TokenText))
                 {
                     Abort($"{CurrToken.TokenText} has already been declared as a label");
                 }
                 labelsDeclared.Add(CurrToken.TokenText);
+                Emitter.EmitTextLine($"{CurrToken.TokenText}:");
             }
-            else if (CheckToken(Token.TokenType.INPUTNUM)) // Input from user
+            else if (CheckToken(Token.TokenType.INPUTNUM)) // Input number from user
             {
                 NextToken();
-                numberVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resq 1");
-                Emitter.EmitTextLine("lea rcx, [formatNum]");
-                Emitter.EmitTextLine($"lea rdx, [{CurrToken.TokenText}]");
-                Emitter.EmitTextLine("xor rax, rax");
-                Emitter.EmitTextLine("call scanf");
+                if (!numberVars.Contains(CurrToken.TokenText)) 
+                {
+                    numberVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"float {CurrToken.TokenText};");
+                }
+                // edit for error checking!!!!
+                Emitter.EmitTextLine($"scanf(\"%f\",&{CurrToken.TokenText});");
+                Emitter.EmitTextLine($"while ((getchar()) != '\\n');"); // clears input buffer 
+
             }
             else
             {
                 NextToken();
-                stringVars.Add(CurrToken.TokenText);
-                Emitter.EmitBssLine(CurrToken.TokenText + " resb 512");
-                Emitter.EmitBssLine("chars resb 4");
-                Emitter.EmitTextLine($"sub rsp, 40\r\nmov rcx, -10 ;-10 = stdinputhandle\r\ncall GetStdHandle\r\nmov rcx, rax\r\n xor rdx, rdx\r\nmov rdx, {CurrToken.TokenText}\r\nmov r8, 511\r\nmov r9, chars\r\nmov rax, qword 0\r\nmov qword [rsp+0x20], rax\r\ncall ReadConsoleA\r\nadd rsp, 40");
+                if (!stringVars.Contains(CurrToken.TokenText))
+                {
+                    stringVars.Add(CurrToken.TokenText);
+                    Emitter.EmitHeaderLine($"char {CurrToken.TokenText}[512];");
+                } 
+                Emitter.EmitTextLine($"fgets({CurrToken.TokenText}, 511, stdin);");
             }
             MatchToken(Token.TokenType.IDENT);
         }
-
+        // used to parse LET tokens
+       
         private void ParseVariable()
         {
-            Console.WriteLine("STATEMENT - LET");
             NextToken();
-            string identString = CurrToken.TokenText;  
+
+            string identString = CurrToken.TokenText;
+            //Emitter.EmitText($"char {CurrToken.TokenText}[] = ");
+
             MatchToken(Token.TokenType.IDENT);
-            if (!stringVars.Contains(CurrToken.TokenText) || !numberVars.Contains(CurrToken.TokenText))
+            MatchToken(Token.TokenType.EQ);
+            if (!stringVars.Contains(identString) && !numberVars.Contains(identString))
             {
-                if (CheckPeek(Token.TokenType.NUMBER))
+                if (CheckToken(Token.TokenType.NUMBER) || CheckToken(Token.TokenType.MINUS))
                 {
                     numberVars.Add(identString);
+                    Emitter.EmitText($"{identString} = ");
+                    Emitter.EmitHeaderLine($"float {identString};");
                 }
-                else if (CheckPeek(Token.TokenType.IDENT))
+                else if (CheckToken(Token.TokenType.IDENT) && (numberVars.Contains(CurrToken.TokenText)))
                 {
-                    NextToken();
-                    if (numberVars.Contains(CurrToken.TokenText))
-                    {
-
-                    }
+                    numberVars.Add(identString);
+                    Emitter.EmitText($"{identString} = ");
+                    Emitter.EmitHeaderLine($"float {identString};");
                 }
                 else
                 {
+                    Emitter.EmitText($"char {identString}[] = ");
                     stringVars.Add(identString);
                 }
             }
-            MatchToken(Token.TokenType.EQ);
-            if (CheckToken(Token.TokenType.STRING))
+            else
             {
-                Emitter.CreateData(CurrToken.TokenText, identString);
-                NextToken();
+                Emitter.EmitText($"{identString} = ");
             }
-            else // this needs to be fixed for doubles
-            {
-                int.TryParse(CurrToken.TokenText, out int token);
-                //double.TryParse(CurrToken.TokenText, out double value);
-                Emitter.CreateData(token, identString);
-                NextToken();
-            }
-            
+            Expression();
+            Emitter.EmitTextLine(";");   
         }
-
+        // used to parse WHILE, REPEAT and ENDWHILE tokens
         private void ParseLoop()
         {
-            Console.WriteLine("STATEMENT - WHILE");
             NextToken();
+            Emitter.EmitText("while(");
             Comparison();
             MatchToken(Token.TokenType.REPEAT);
             NewLine();
+            Emitter.EmitText("){");
             while (!CheckToken(Token.TokenType.ENDWHILE))
             {
                 Statement();
             }
             MatchToken(Token.TokenType.ENDWHILE);
+            Emitter.EmitTextLine("}");
             // when we return to statement, we get the newline check
         }
-
+        // used to parse IF, THEN and ENDIF tokens
         private void ParseIfThen()
         {
-            Console.WriteLine("STATEMENT - IF");
-            Emitter.EmitText("CMP ");
             NextToken();
+            Emitter.EmitText("if(");
             Comparison();
             MatchToken(Token.TokenType.THEN);
             NewLine();
+            Emitter.EmitTextLine("){");
             while (!CheckToken(Token.TokenType.ENDIF))
             {
                 Statement();
             }
             MatchToken(Token.TokenType.ENDIF);
+            Emitter.EmitTextLine("}");
         }
-
+        // used to parse PRINT tokens
         private void ParsePrint()
-        {
-            Emitter.EmitText("\nlea rcx, [");
+        {         
             NextToken();
             if (CheckToken(Token.TokenType.STRING))
             {
-                Emitter.EmitText($"formatString]\nlea rdx, ");
-                string stringRef = Emitter.CreateData(CurrToken.TokenText); // adds the string variable to the .Data section
-                Emitter.EmitTextLine($"[{stringRef}]");
-                Emitter.EmitTextLine("xor rax, rax");
-                Emitter.EmitTextLine("call printf");
-                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                Emitter.EmitText($"printf(\"%s\\n\",{CurrToken.TokenText});");
                 NextToken();
             }
             else if (CheckToken(Token.TokenType.IDENT))
             {
                 if(numberVars.Contains(CurrToken.TokenText)) // if the variable is a number, set up that print statement
                 {
-                    Emitter.EmitText($"formatNum]\nmov rdx, [");
+                    Emitter.EmitText($"printf(\"%.2f\\n\", (float)(");
                     Expression();
-                    Emitter.EmitTextLine("]");
-                    Emitter.EmitTextLine("xor rax, rax");
-                    Emitter.EmitTextLine("call printf");
-                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                    Emitter.EmitTextLine("));");
                 }
                 else
                 {
-                    Emitter.EmitText($"formatString]\nlea rdx,[");
-                    Expression();
-                    Emitter.EmitTextLine("]\nxor rax, rax");
-                    Emitter.EmitTextLine("call printf");
-                    Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                    Emitter.EmitText($"printf(\"%s\\n\",{CurrToken.TokenText});");
+                    NextToken();
                 }               
             }
-            else // if its a constant number
+            else // if its a constant number or expression
             {
-                Emitter.EmitText($"formatNum]\nmov rdx, ");
+                Emitter.EmitText("printf(\"%.2f\\n\", (float)(");
                 Expression();
-                Emitter.EmitTextLine("\nxor rax, rax");
-                Emitter.EmitTextLine("call printf");
-                Emitter.EmitTextLine("lea rcx, [formatString]\nlea rdx, [crlf]\nxor rax, rax\ncall printf");
+                Emitter.EmitTextLine("));");
             }
-
-        }// need to fix parse print
-
+            
+        }
+        // handles new lines in code, ensuring each line has at least one
+        // and ignoring all others
         private void NewLine()
         {
-            LineNumber++;
-            Console.WriteLine("NEW LINE");
             MatchToken(Token.TokenType.NEWLINE);
             while (CheckToken(Token.TokenType.NEWLINE))
             {
-                LineNumber++;
                 NextToken();
             }
         }
+        // called by ParseLoop and ParseIfThen to handle comparisons
         private void Comparison()
         {
-           // Console.WriteLine("COMPARISON");
             Expression();
             if ((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Expression();
             }
@@ -327,52 +313,64 @@ namespace Parser
             {
                 Abort($"Comparison error: expected comparator got \"{CurrToken.Type}\"");
             }
+            while((int)CurrToken.Type >= 206 && (int)CurrToken.Type <= 211)
+            {
+                Emitter.EmitText(CurrToken.TokenText);
+                NextToken();
+                Expression();
+            }
         }
+        // Expression, Term, Unary and Primary all work together to build valid
+        // expression statements. 
         private void Expression()
         {
-            //emitterTestString += CurrToken.TokenText;
-            //Console.WriteLine("EXPRESSION");
             Term();
             while (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Term();
             }
         }
         private void Term()
         {
-            //emitterTestString += CurrToken.TokenText;
-            //Console.WriteLine("TERM");
             Unary();
             while (CheckToken(Token.TokenType.SLASH) || CheckToken(Token.TokenType.ASTERIK))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
                 Unary();
             }
         }
         private void Unary()
         {
-            //emitterTestString += CurrToken.TokenText;
-           // Console.WriteLine("UNARY");
             if (CheckToken(Token.TokenType.PLUS) || CheckToken(Token.TokenType.MINUS))
             {
-                emitterTestString += CurrToken.TokenText;
+                Emitter.EmitText(CurrToken.TokenText);
                 NextToken();
             }
             Primary();
         }
         private void Primary() 
         {
-            Emitter.EmitText($"{CurrToken.TokenText}");
             if (CheckToken(Token.TokenType.IDENT))
             {
+                if(!numberVars.Contains(CurrToken.TokenText) && !stringVars.Contains(CurrToken.TokenText))
+                {
+                    Abort("Error: referencing variable before assignment");
+                }
+                Emitter.EmitText(CurrToken.TokenText);
                 MatchToken(Token.TokenType.IDENT);               
+            }
+            else if (CheckToken(Token.TokenType.NUMBER))
+            {
+                Emitter.EmitText(CurrToken.TokenText);
+                MatchToken(Token.TokenType.NUMBER);
             }
             else
             {
-                MatchToken(Token.TokenType.NUMBER);
+                Emitter.EmitText(CurrToken.TokenText);
+                MatchToken(Token.TokenType.STRING);
             }
         }
     }

@@ -9,8 +9,8 @@ namespace Lexer
 {
     public class Lexer
     {
-        public char currChar{ get; set; }
-        public int currPos { get; set; }
+        private char currChar{ get; set; }
+        private int currPos { get; set; }
         public string source { get; set; }
         public Lexer(string source)
         {
@@ -21,6 +21,7 @@ namespace Lexer
         }
 
         // shifts the char pointer to the next char in the token
+        
         public void NextChar()
         {
             this.currPos++;
@@ -132,7 +133,7 @@ namespace Lexer
                     break;
                 case var _check when (char.IsLetter(currChar)):
                     string lexeme = GetLexeme();
-                    if (Enum.TryParse(lexeme, false, out Token.TokenType result)) // chagned ignore case 07/22 from T -> false. 
+                    if (Enum.TryParse(lexeme, false, out Token.TokenType result))  
                     {
                         token = new Token(lexeme, result);
                     }
@@ -161,7 +162,7 @@ namespace Lexer
             return token;
         }
         
-        // returns a lexeme string to the caller, with checks defined for lexems
+        // returns a lexeme string to the caller, with checks defined for lexemes
         private string GetLexeme()
         {
             string valueString = "";
@@ -180,8 +181,8 @@ namespace Lexer
             return valueString;
         }
 
-        // returns a number string to the caller, with checks defined for numbers
-        private string GetNumber() // NOTE: see if I can get this a bit more concise
+        // returns a string representation of a number, with checks defined for numbers
+        private string GetNumber() 
         {
             string valueString = "";
             int decimalCount = 0;

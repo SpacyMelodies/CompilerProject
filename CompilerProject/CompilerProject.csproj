@@ -8,12 +8,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="ParserText.Teeny" />
+    <None Remove="build.bat" />
+    <None Remove="NewProgram.TL" />
+    <None Remove="ParserText.TL" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="ParserText.Teeny">
+    <Content Include="build.bat">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NewProgram.TL">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ParserText.TL">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
