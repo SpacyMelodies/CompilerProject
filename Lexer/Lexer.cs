@@ -21,7 +21,7 @@ namespace Lexer
         }
 
         // shifts the char pointer to the next char in the token
-        // lalala
+        
         public void NextChar()
         {
             this.currPos++;
